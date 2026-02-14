@@ -42,7 +42,8 @@ def main():
 
             if event.type == pygame.MOUSEWHEEL:
                 # Zoom instead of pan when CTRL is held
-                if pygame.key.get_mods() & (pygame.K_RCTRL | pygame.K_LCTRL):
+                mod_keys = pygame.key.get_mods()
+                if mod_keys & (pygame.KMOD_RCTRL | pygame.KMOD_LCTRL):
                     mouse_pos = pygame.Vector2(pygame.mouse.get_pos())
 
                     # World position before zoom
@@ -59,6 +60,8 @@ def main():
                     pan = mouse_pos - world_pos * new_scale
 
                     scale = new_scale
+                elif mod_keys & (pygame.KMOD_LSHIFT | pygame.KMOD_RSHIFT) and not event.touch:
+                    pan += pygame.Vector2(event.y, 0) * PAN_SPEED
                 else:
                     pan += pygame.Vector2(event.x, event.y) * PAN_SPEED
 
