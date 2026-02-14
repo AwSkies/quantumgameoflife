@@ -9,6 +9,7 @@ from pygame_widgets.dropdown import Dropdown
 from quantumgameoflife import cells
 from quantumgameoflife import ColorMode
 from quantumgameoflife import draw_grid
+from quantumgameoflife import non_entangled_propogation
 
 RES_X = 1280
 RES_Y = 720
@@ -213,6 +214,7 @@ def main():
         screen.fill("black")
 
         # TODO: Perform grid operations
+        grid = non_entangled_propogation(grid)
 
         draw_grid(
             screen,
