@@ -76,7 +76,14 @@ def main():
 
     # TODO: Initialize grid properly
     grid = cells.make_cell_array(N_CELLS_X, N_CELLS_Y)
-    cells.fixed_initialize(grid, complex(0.5, 0), complex(0, np.sqrt(3) / 2))
+    for i, s in np.ndenumerate(grid):
+        y, x = i
+        x_frac = x / N_CELLS_X + 1e-5
+        y_frac = y / N_CELLS_Y + 1e-5
+        N = np.hypot(x_frac, y_frac)
+        grid[i]['alive'] = (x_frac / N) * np.exp(2j * np.pi * x_frac)
+        grid[i]['dead'] = (y_frac / N) * np.exp(2j * np.pi * y_frac)
+        print(x_frac, y_frac)
 
     def observe():
         nonlocal grid
@@ -142,7 +149,7 @@ def main():
         COLOR_OPTIONS,
         radius=HSV_DROPDOWNS_RADIUS,
     )
-    l_dropdown = Dropdown(
+    v_dropdown = Dropdown(
         screen,
         HSV_DROPDOWNS_X,
         MODE_TOGGLE_Y
@@ -151,7 +158,7 @@ def main():
         + 2 * HSV_DROPDOWNS_HEIGHT,
         HSV_DROPDOWNS_WIDTH,
         HSV_DROPDOWNS_HEIGHT,
-        "Lightness",
+        "Value",
         COLOR_OPTIONS,
         radius=HSV_DROPDOWNS_RADIUS,
     )
@@ -214,9 +221,12 @@ def main():
             pan,
             CELL_SIZE * scale,
             CELL_SIZE * SPACING * scale,
+            h_dropdown.getSelected(),
+            s_dropdown.getSelected(),
+            v_dropdown.getSelected(),
         )
 
-        for dropdown in [l_dropdown, s_dropdown, h_dropdown]:
+        for dropdown in [v_dropdown, s_dropdown, h_dropdown]:
             if entanglement_mode:
                 dropdown.hide()
             else:
