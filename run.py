@@ -13,11 +13,12 @@ RES_Y = 720
 SLIDER_OFFSET = 100
 SLIDER_HEIGHT = 50
 SLIDER_WIDTH = RES_X // 4
+SLIDER_X = RES_X // 2 - SLIDER_WIDTH // 2
 
-BUTTON_OFFSET = 100
-BUTTON_HEIGHT = 100
-BUTTON_WIDTH = 200
-BUTTON_RADIUS = 25
+PLAY_TOGGLE_OFFSET_X = 100
+PLAY_TOGGLE_OFFSET_Y = 50
+PLAY_TOGGLE_HEIGHT = 25
+PLAY_TOGGLE_WIDTH = 50
 
 MODE_TOGGLE_OFFSET_X = 50
 MODE_TOGGLE_OFFSET_Y = 50
@@ -94,7 +95,7 @@ def main():
 
     speed_slider = Slider(
         screen,
-        RES_X // 2 - SLIDER_WIDTH // 2,
+        SLIDER_X,
         RES_Y - SLIDER_OFFSET,
         SLIDER_WIDTH,
         SLIDER_HEIGHT,
@@ -111,6 +112,14 @@ def main():
         radius=BUTTON_RADIUS,
         onClick=observe,
         text="Observe",
+    )
+    play_toggle = Toggle(
+        screen,
+        SLIDER_X + SLIDER_WIDTH + PLAY_TOGGLE_OFFSET_X,
+        RES_Y - PLAY_TOGGLE_HEIGHT - PLAY_TOGGLE_OFFSET_Y,
+        PLAY_TOGGLE_WIDTH,
+        PLAY_TOGGLE_HEIGHT,
+        startOn=True
     )
     mode_toggle = Toggle(
         screen,
@@ -220,8 +229,8 @@ def main():
         step_counter.setText(str(step))
         
         # TODO: Do step calculations based on `speed_slider.getValue()` and `SIMULATION_SPEED`. Maybe count the nunber of frames passed.
-        
-        step += 1
+        if play_toggle.getValue():
+            step += 1
 
         pygame_widgets.update(events)
         # flip() the display to put your work on screen
