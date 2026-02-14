@@ -76,12 +76,13 @@ def main():
 
     # TODO: Initialize grid properly
     grid = cells.make_cell_array(N_CELLS_X, N_CELLS_Y)
-    for i, s in np.ndenumerate(grid):
-        x, y = i
-        x_frac = x / N_CELLS_X + 1e-5
-        y_frac = y / N_CELLS_Y + 1e-5
-        grid[i]["alive"] = x_frac * np.exp(2j * np.pi * x_frac)
-        grid[i]["dead"] = y_frac * np.exp(2j * np.pi * y_frac)
+    cells.fixed_initialize(grid, complex(1, 1), complex(-1, 1))
+    # for i, s in np.ndenumerate(grid):
+    #     x, y = i
+    #     x_frac = x / N_CELLS_X + 1e-5
+    #     y_frac = y / N_CELLS_Y + 1e-5
+    #     grid[i]["alive"] = x_frac * np.exp(2j * np.pi * x_frac)
+    #     grid[i]["dead"] = y_frac * np.exp(2j * np.pi * y_frac)
     cells.normalize_cells(grid)
 
     def observe():
