@@ -1,12 +1,9 @@
 from enum import StrEnum, auto
-class DisplayType(StrEnum):
-    a_real = 'Real part of a'
-    a_imag = 'Imaginary part of a'
-    a_abs = 'Absolute value of a'
-    b_real = 'Real part of b'
-    b_imag = 'Imaginary part of b'
-    b_abs = 'Absolute value of b'
-    phase_a= 'Argument a'
-    phase_b= 'Argument b'
-    phase_difference_ba = 'phase difference b-a'
-    phase_difference_ab = 'phase difference a-b'
+class ColorMode(StrEnum):
+    A_MOD = '|a|'
+    A_PHASE= 'arg(a)'
+    B_ABS = '|b|'
+    B_PHASE= 'arg(b)'
+    DELTA_PHASE_BA = 'arg(b / a)'
+    DELTA_PHASE_AB = 'arg(a / b)'
+    CONST = 'Constant'

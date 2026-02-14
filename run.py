@@ -7,7 +7,7 @@ from pygame_widgets.toggle import Toggle
 from pygame_widgets.textbox import TextBox
 from pygame_widgets.dropdown import Dropdown
 from quantumgameoflife import cells
-from quantumgameoflife import DisplayType
+from quantumgameoflife import ColorMode
 from quantumgameoflife import draw_grid
 
 RES_X = 1280
@@ -50,7 +50,7 @@ HSV_DROPDOWNS_WIDTH = 100
 HSV_DROPDOWNS_RADIUS = 10
 HSV_DROPDOWNS_X = RES_X - HSV_DROPDOWNS_WIDTH - HSV_DROPDOWNS_OFFSET_X
 
-COLOR_OPTIONS = list(DisplayType)
+COLOR_OPTIONS = list(ColorMode)
 
 PAN_SPEED = 10
 ZOOM_SPEED = 0.5
@@ -83,7 +83,6 @@ def main():
         N = np.hypot(x_frac, y_frac)
         grid[i]['alive'] = (x_frac / N) * np.exp(2j * np.pi * x_frac)
         grid[i]['dead'] = (y_frac / N) * np.exp(2j * np.pi * y_frac)
-        print(x_frac, y_frac)
 
     def observe():
         nonlocal grid

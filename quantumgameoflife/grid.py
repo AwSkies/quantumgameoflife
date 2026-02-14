@@ -1,7 +1,7 @@
 import numpy as np
 import pygame
 
-from .display_type import DisplayType
+from .display_type import ColorMode
 
 COLOR_ALPHA = 1.0
 
@@ -15,93 +15,75 @@ def color_unentangled(cell, mode, color_mode_h, color_mode_s, color_mode_v):
     color = pygame.Color(0, 0, 0)
     # Set defaults for if no mode is selected
     if color_mode_h == None:
-        color_mode_h = DisplayType.phase_difference_ab
+        color_mode_h = ColorMode.DELTA_PHASE_BA
     if color_mode_s == None:
-        color_mode_s = DisplayType.b_abs
+        color_mode_s = ColorMode.CONST
     if color_mode_v == None:
-        color_mode_v = DisplayType.b_abs
+        color_mode_v = ColorMode.B_ABS
     color_h = 0
     color_s = 0
     color_v = 0
     match color_mode_h:
-        case DisplayType.a_real:
-            color_h = int(360 * cell["dead"].real)
-        case DisplayType.b_real:
-            color_h = int(360 * cell["alive"].real)
-        case DisplayType.a_imag:
-            color_h = int(360 * cell["dead"].imag)
-        case DisplayType.b_imag:
-            color_h = int(360 * cell["alive"].imag)
-        case DisplayType.a_abs:
+        case ColorMode.A_MOD:
             color_h = int(360 * np.abs(cell["dead"]))
-        case DisplayType.b_abs:
+        case ColorMode.B_ABS:
             color_h = int(360 * np.abs(cell["alive"]))
-        case DisplayType.phase_a:
+        case ColorMode.A_PHASE:
             color_h = int(np.angle(cell["dead"], deg=True) + 180)
-        case DisplayType.phase_b:
+        case ColorMode.B_PHASE:
             color_h = int(np.angle(cell["alive"], deg=True) + 180)
-        case DisplayType.phase_difference_ba:
+        case ColorMode.DELTA_PHASE_BA:
             color_h = int(np.angle(cell["alive"] / cell["dead"], deg=True) + 180)
-        case DisplayType.phase_difference_ab:
+        case ColorMode.DELTA_PHASE_AB:
             color_h = int(np.angle(cell["dead"] / cell["alive"], deg=True) + 180)
+        case ColorMode.CONST:
+            color_h = 0
         case _:
             print("not allowed")
     match color_mode_s:
-        case DisplayType.a_real:
-            color_s = int(100 * cell["dead"].real)
-        case DisplayType.b_real:
-            color_s = int(100 * cell["alive"].real)
-        case DisplayType.a_imag:
-            color_s = int(100 * cell["dead"].imag)
-        case DisplayType.b_imag:
-            color_s = int(100 * cell["alive"].imag)
-        case DisplayType.a_abs:
+        case ColorMode.A_MOD:
             color_s = int(100 * np.abs(cell["dead"]))
-        case DisplayType.b_abs:
+        case ColorMode.B_ABS:
             color_s = int(100 * np.abs(cell["alive"]))
-        case DisplayType.phase_a:
+        case ColorMode.A_PHASE:
             color_s = int((100.0 / 360.0) * (np.angle(cell["dead"], deg=True) + 180))
-        case DisplayType.phase_b:
+        case ColorMode.B_PHASE:
             color_s = int((100.0 / 360.0) * (np.angle(cell["alive"], deg=True) + 180))
-        case DisplayType.phase_difference_ba:
+        case ColorMode.DELTA_PHASE_BA:
             color_s = int(
                 (100.0 / 360.0)
                 * (np.angle(cell["alive"] / cell["dead"], deg=True) + 180)
             )
-        case DisplayType.phase_difference_ab:
+        case ColorMode.DELTA_PHASE_AB:
             color_s = int(
                 (100.0 / 360.0)
                 * (np.angle(cell["dead"] / cell["alive"], deg=True) + 180)
             )
+        case ColorMode.CONST:
+            color_s = 100
         case _:
             print("not allowed")
     match color_mode_v:
-        case DisplayType.a_real:
-            color_v = int(100 * cell["dead"].real)
-        case DisplayType.b_real:
-            color_v = int(100 * cell["alive"].real)
-        case DisplayType.a_imag:
-            color_v = int(100 * cell["dead"].imag)
-        case DisplayType.b_imag:
-            color_v = int(100 * cell["alive"].imag)
-        case DisplayType.a_abs:
+        case ColorMode.A_MOD:
             color_v = int(100 * np.abs(cell["dead"]))
-        case DisplayType.b_abs:
+        case ColorMode.B_ABS:
             color_v = int(100 * np.abs(cell["alive"]))
-        case DisplayType.phase_a:
+        case ColorMode.A_PHASE:
             color_v = int((100.0 / 360.0) * (np.angle(cell["dead"], deg=True) + 180))
-        case DisplayType.phase_b:
+        case ColorMode.B_PHASE:
             color_v = int((100.0 / 360.0) * (np.angle(cell["alive"], deg=True) + 180))
-        case DisplayType.phase_difference_ba:
+        case ColorMode.DELTA_PHASE_BA:
             color_v = int(
                 (100.0 / 360.0)
                 * (np.angle(cell["alive"] / cell["dead"], deg=True) + 180)
             )
-        case DisplayType.phase_difference_ab:
+        case ColorMode.DELTA_PHASE_AB:
             color_v = int(
                 (100.0 / 360.0)
                 * (np.angle(cell["dead"] / cell["alive"], deg=True) + 180)
             )
+        case ColorMode.CONST:
+            color_v = 100
         case _:
             print("not allowed")
     color.hsva = (color_h, color_s, color_v, COLOR_ALPHA)
@@ -111,9 +93,9 @@ def color_unentangled(cell, mode, color_mode_h, color_mode_s, color_mode_v):
 def get_color(
     cell,
     mode,
-    color_mode_h: DisplayType,
-    color_mode_s: DisplayType,
-    color_mode_v: DisplayType,
+    color_mode_h: ColorMode,
+    color_mode_s: ColorMode,
+    color_mode_v: ColorMode,
 ):
     if mode:
         return color_entangled(cell, mode, color_mode_h, color_mode_s, color_mode_v)
