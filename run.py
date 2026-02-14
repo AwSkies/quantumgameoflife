@@ -1,5 +1,14 @@
 import pygame
+import pygame_widgets
 import numpy as np
+from pygame_widgets.slider import Slider
+
+RES_X = 1280
+RES_Y = 720
+
+SLIDER_OFFSET = 100
+SLIDER_HEIGHT = 50
+SLIDER_WIDTH = RES_X // 4
 
 PAN_SPEED = 10
 ZOOM_SPEED = 0.5
@@ -29,8 +38,10 @@ def draw_grid(screen, grid: np.ndarray, base: pygame.Vector2, scale, spacing):
 
 def main():
     pygame.init()
-    screen = pygame.display.set_mode((1280, 720))
+    screen = pygame.display.set_mode((RES_X, RES_Y))
     clock = pygame.time.Clock()
+
+    speed_slider = Slider(screen, RES_X // 2 - SLIDER_WIDTH // 2, RES_Y - SLIDER_OFFSET, SLIDER_WIDTH, SLIDER_HEIGHT, min=0, max=100, step=1)
 
     running = True
     pan = pygame.Vector2()
@@ -41,7 +52,8 @@ def main():
     while running:
         # poll for events
         # pygame.QUIT event means the user clicked X to close your window
-        for event in pygame.event.get():
+        events = pygame.event.get()
+        for event in events:
             if event.type == pygame.QUIT:
                 running = False
 
@@ -88,6 +100,7 @@ def main():
             CELL_SIZE * SPACING * scale,
         )
 
+        pygame_widgets.update(events)
         # flip() the display to put your work on screen
         pygame.display.flip()
 
