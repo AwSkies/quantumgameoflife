@@ -1,10 +1,17 @@
 import numpy as np
-
+seed_value = 10
 CELL_TYPE = np.dtype([('dead', np.complex128), ('alive', np.complex128)])
 
 
 def make_cell_array(x, y):
-    return np.zeros((x,y), dtype=CELL_TYPE)
+    return np.transpose(np.zeros((x,y), dtype=CELL_TYPE))
+
+def fixed_initialize(cell_matrix, a, b):
+    for row in cell_matrix: 
+        for cell in row: 
+            cell['dead'] = a
+            cell['alive'] = b
+            normalization(cell)
 
 def random_initialize(cell_matrix):
     '''

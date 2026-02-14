@@ -50,7 +50,7 @@ HSV_DROPDOWNS_RADIUS = 10
 HSV_DROPDOWNS_X = RES_X - HSV_DROPDOWNS_WIDTH - HSV_DROPDOWNS_OFFSET_X
 
 # TODO: Make actual list of color options
-COLOR_OPTIONS = list(['a', 'b', 'c'])
+COLOR_OPTIONS = list(DisplayType)
 
 PAN_SPEED = 10
 ZOOM_SPEED = 0.5
@@ -63,26 +63,93 @@ SPACING = 0.5  # spacing between cells in fraction of full cell size
 SIMULATION_SPEED = 1
 COLOR_ALPHA = 1.0 
 
-def color_option(cell, color_menu_h: DisplayType, color_menu_s: DisplayType, color_menu_v: DisplayType):
+def color_entangled(cell, mode, color_menu_h, color_menu_s, color_menu_l):
+    #TODO
+    return 0
+
+def color_unentangled(cell, mode, color_menu_h, color_menu_s, color_menu_l):
     color = pygame.Color(0,0,0)
-    color.hsla = (0.0, 0.0, 0.0, COLOR_ALPHA)
+    color_h = 0
+    color_s = 0
+    color_l = 0
     match color_menu_h:
-        case 'real part of a':
-            print(color_menu_h)
-            print(cell['dead'])
+        case DisplayType.a_real:
+            color_h = int(360 * cell['dead'].real)
+        case DisplayType.b_real:
+            color_h = int(360 * cell['alive'].real)
+        case DisplayType.a_imag:
+            color_h = int(360 * cell['dead'].imag)
+        case DisplayType.b_imag:
+            color_h = int(360 * cell['alive'].imag)
+        case DisplayType.a_abs:
+            color_h = int(360 * np.abs(cell['dead']))
+        case DisplayType.b_abs:
+            color_h = int(360 * np.abs(cell['alive']))
+        case DisplayType.phase_a:
+            color_h = int((np.angle(cell['dead'], deg = True)))
+        case DisplayType.phase_b:
+            color_h = int((np.angle(cell['alive'], deg = True)))
+        case DisplayType.phase_difference_ba:
+            color_h = int((np.angle(cell['alive'] / cell['dead'], deg = True)))
+        case DisplayType.phase_difference_ab:
+            color_h = int((np.angle(cell['dead'] / cell['alive'], deg = True)))
         case _:
             print('not allowed')
     match color_menu_s:
-        case 'real part of a':
-            print(color_menu_s)
+        case DisplayType.a_real:
+            color_s = int(100 * cell['dead'].real)
+        case DisplayType.b_real:
+            color_s = int(100 * cell['alive'].real)
+        case DisplayType.a_imag:
+            color_s = int(100 * cell['dead'].imag)
+        case DisplayType.b_imag:
+            color_s = int(100 * cell['alive'].imag)
+        case DisplayType.a_abs:
+            color_s = int(100 * np.abs(cell['dead']))
+        case DisplayType.b_abs:
+            color_s = int(100 * np.abs(cell['alive']))
+        case DisplayType.phase_a:
+            color_s = int((100.0 / 360.0) * (np.angle(cell['dead'], deg = True)))
+        case DisplayType.phase_b:
+            color_s = int((100.0 / 360.0) * (np.angle(cell['alive'], deg = True)))
+        case DisplayType.phase_difference_ba:
+            color_s = int((100.0 / 360.0) * (np.angle(cell['alive'] / cell['dead'], deg = True)))
+        case DisplayType.phase_difference_ab:
+            color_s = int((100.0 / 360.0) * (np.angle(cell['dead'] / cell['alive'], deg = True)))
         case _:
             print('not allowed')
-    match color_menu_v:
-        case 'real part of a':
-            print(color_menu_v)
+    match color_menu_l:
+        case DisplayType.a_real:
+            color_l = int(100 * cell['dead'].real)
+        case DisplayType.b_real:
+            color_l = int(100 * cell['alive'].real)
+        case DisplayType.a_imag:
+            color_l = int(100 * cell['dead'].imag)
+        case DisplayType.b_imag:
+            color_l = int(100 * cell['alive'].imag)
+        case DisplayType.a_abs:
+            color_l = int(100 * np.abs(cell['dead']))
+        case DisplayType.b_abs:
+            color_l = int(100 * np.abs(cell['alive']))
+        case DisplayType.phase_a:
+            color_l = int((100.0 / 360.0) * (np.angle(cell['dead'], deg = True)))
+        case DisplayType.phase_b:
+            color_l = int((100.0 / 360.0) * (np.angle(cell['alive'], deg = True)))
+        case DisplayType.phase_difference_ba:
+            color_l = int((100.0 / 360.0) * (np.angle(cell['alive'] / cell['dead'], deg = True)))
+        case DisplayType.phase_difference_ab:
+            color_l = int((100.0 / 360.0) * (np.angle(cell['dead'] / cell['alive'], deg = True)))
         case _:
             print('not allowed')
+    #print(color_h)
+    color.hsla = (color_h, color_s, color_l, COLOR_ALPHA)
     return color 
+
+def color_mode(cell, mode, color_menu_h: DisplayType, color_menu_s: DisplayType, color_menu_l: DisplayType):
+    if(mode):
+        return color_entangled(cell, mode, color_menu_h, color_menu_s, color_menu_l)
+    else:
+        return color_unentangled(cell, mode, color_menu_h, color_menu_s, color_menu_l)
 
 def draw_grid(screen, entanglement_mode, grid: np.ndarray, base: pygame.Vector2, scale, spacing):
     for i, x in np.ndenumerate(grid):
@@ -92,12 +159,20 @@ def draw_grid(screen, entanglement_mode, grid: np.ndarray, base: pygame.Vector2,
             + pygame.Vector2(i).elementwise() * pygame.Vector2(spacing, spacing)
         )
         # TODO: Interpret color properly
-        color_H = int(360 * ((x + np.pi) / (2 * np.pi)))
-        color_S = int(100 * x)
-        color_L = int(100 * x)
-        color_A = 100
-        color = pygame.Color(0,0,0)
-        color.hsla = (color_H, color_S, color_L, color_A)
+        #color_H = int(360 * ((x + np.pi) / (2 * np.pi)))
+        #color_S = int(100 * x)
+        #color_L = int(100 * x)
+        #color_A = 100
+        #color = pygame.Color(0,0,0)
+        #color.hsla = (color_H, color_S, color_L, color_A)
+        #/Test Area
+        
+        color_menu_h = DisplayType.a_abs
+        color_menu_s = DisplayType.a_real
+        color_menu_l = DisplayType.a_real
+        #/
+        #print(x['dead'], x['alive'])
+        color = color_mode(x, entanglement_mode, color_menu_h, color_menu_s, color_menu_l)
         pygame.draw.rect(
             screen,
             color,
@@ -120,8 +195,9 @@ def main():
     x = np.linspace(0.0, 0.5, N_CELLS_X)
     y = np.linspace(0.0, 0.5, N_CELLS_Y)
     y = y.reshape((N_CELLS_Y, 1))
-    grid = x + y
-
+    #grid = x + y
+    grid = cells.make_cell_array(N_CELLS_X, N_CELLS_Y)
+    cells.fixed_initialize(grid, complex(0.5, 0), complex(0, np.sqrt(3) / 2))
     def observe():
         nonlocal grid
         # TODO: Perform actual observation calculation
@@ -256,9 +332,9 @@ def main():
 
         for dropdown in [l_dropdown, s_dropdown, h_dropdown]:
             if entanglement_mode:
-                dropdown.show()
-            else:
                 dropdown.hide()
+            else:
+                dropdown.show()
 
         step_counter.setText(str(step))
         
@@ -276,7 +352,8 @@ def main():
 
 
 if __name__ == "__main__":
-    #main()
+    main()
+    '''
     cells_matrix = cells.make_cell_array(2, 2)
     cells.random_initialize(cells_matrix)
     color_menu_h = DisplayType.a_real
@@ -284,3 +361,5 @@ if __name__ == "__main__":
     color_menu_v = DisplayType.b_real
     color_option(cells_matrix[0][0], color_menu_h, color_menu_s, color_menu_v)
     #print(DisplayType.a_img)
+    '''
+    
