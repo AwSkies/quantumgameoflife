@@ -1,6 +1,6 @@
 import numpy as np
 
-CELL_TYPE = np.dtype([('alive', np.complex128), ('dead', np.complex128)])
+CELL_TYPE = np.dtype([('dead', np.complex128), ('alive', np.complex128)])
 
 
 def make_cell_array(x, y):
@@ -14,8 +14,8 @@ def random_initialize(cell_matrix):
     '''
     for row in cell_matrix: 
         for cell in row: 
-            cell['alive'] = complex(np.random.default_rng().random(), np.random.default_rng().random())
             cell['dead'] = complex(np.random.default_rng().random(), np.random.default_rng().random())
+            cell['alive'] = complex(np.random.default_rng().random(), np.random.default_rng().random())
             normalization(cell)
 
 def renormalize_cell_array(cell_matrix):
@@ -25,8 +25,9 @@ def renormalize_cell_array(cell_matrix):
 
 def normalization(cell):
     norm = np.sqrt(abs(cell['alive']) ** 2 + abs(cell['dead']) ** 2)
-    cell['alive'] /= norm
     cell['dead'] /= norm
+    cell['alive'] /= norm
+    
 
 def phase_difference(cell):
     '''
@@ -35,7 +36,7 @@ def phase_difference(cell):
     '''
     return np.angle(cell['alive'] / cell['dead'])
 
-def set_cell_value(cell, c_alive, c_dead):
+def set_cell_value(cell, c_dead, c_alive):
     cell['alive'] = c_alive
     cell['dead'] = c_dead
 

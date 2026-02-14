@@ -2,6 +2,8 @@ import pygame
 import pygame_widgets
 import numpy as np
 from pygame_widgets.slider import Slider
+from quantumgameoflife import cells
+from quantumgameoflife import DisplayType
 
 RES_X = 1280
 RES_Y = 720
@@ -18,7 +20,28 @@ N_CELLS_X = 10
 N_CELLS_Y = 20
 CELL_SIZE = 10
 SPACING = 0.5  # spacing between cells in fraction of full cell size
+COLOR_ALPHA = 1.0 
 
+def color_option(cell, color_menu_h: DisplayType, color_menu_s: DisplayType, color_menu_v: DisplayType):
+    color = pygame.Color(0,0,0)
+    color.hsla = (0.0, 0.0, 0.0, COLOR_ALPHA)
+    match color_menu_h:
+        case 'real part of a':
+            print(color_menu_h)
+            print(cell['dead'])
+        case _:
+            print('not allowed')
+    match color_menu_s:
+        case 'real part of a':
+            print(color_menu_s)
+        case _:
+            print('not allowed')
+    match color_menu_v:
+        case 'real part of a':
+            print(color_menu_v)
+        case _:
+            print('not allowed')
+    return color 
 
 def draw_grid(screen, entanglement_mode, grid: np.ndarray, base: pygame.Vector2, scale, spacing):
     for i, x in np.ndenumerate(grid):
@@ -117,4 +140,11 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    #main()
+    cells_matrix = cells.make_cell_array(2, 2)
+    cells.random_initialize(cells_matrix)
+    color_menu_h = DisplayType.a_real
+    color_menu_s = DisplayType.b_img
+    color_menu_v = DisplayType.b_real
+    color_option(cells_matrix[0][0], color_menu_h, color_menu_s, color_menu_v)
+    #print(DisplayType.a_img)

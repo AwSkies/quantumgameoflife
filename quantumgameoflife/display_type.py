@@ -7,6 +7,3 @@ class DisplayType(StrEnum):
     phase_diff_1= 'phase difference a-b'
     phase_diff_2= 'phase difference b-a'
     UNKNOWN = auto()
-
-print(DisplayType.a_img)
-#Hello
