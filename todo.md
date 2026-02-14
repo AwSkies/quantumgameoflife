@@ -3,7 +3,7 @@
 ## UX
 
 - [X] Step counter
-- [ ] Dropdown for non-entangled mode
+- [X] Dropdown for non-entangled mode
 
 ## Implementation
 
