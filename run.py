@@ -43,7 +43,22 @@ def main():
             if event.type == pygame.MOUSEWHEEL:
                 # Zoom instead of pan when CTRL is held
                 if pygame.key.get_mods() & (pygame.K_RCTRL | pygame.K_LCTRL):
-                    scale = pygame.math.clamp(scale + event.y * ZOOM_SPEED, SCALE_MIN, SCALE_MAX)
+                    mouse_pos = pygame.Vector2(pygame.mouse.get_pos())
+
+                    # World position before zoom
+                    world_pos = (mouse_pos - pan) / scale
+
+                    # Apply zoom
+                    new_scale = pygame.math.clamp(
+                        scale + event.y * ZOOM_SPEED,
+                        SCALE_MIN,
+                        SCALE_MAX
+                    )
+
+                    # Adjust pan so the world point under cursor stays fixed
+                    pan = mouse_pos - world_pos * new_scale
+
+                    scale = new_scale
                 else:
                     pan += pygame.Vector2(event.x, event.y) * PAN_SPEED
 
