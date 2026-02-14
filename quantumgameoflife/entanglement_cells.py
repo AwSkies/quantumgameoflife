@@ -331,10 +331,9 @@ def nth_binary_array(n, k):
     return ((n >> np.arange(k-1, -1, -1)) & 1).astype(int)
 
 
-
-
-l = Lattice(5, 5)
-l.run()
+if __name__=="__main__":
+    l = Lattice(5, 5)
+    l.run()
 
 # l.update_cell_coefficients(np.array([1, 1]), [1])
 # states = create_states()
