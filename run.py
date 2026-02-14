@@ -80,9 +80,10 @@ def main():
         y, x = i
         x_frac = x / N_CELLS_X + 1e-5
         y_frac = y / N_CELLS_Y + 1e-5
-        N = np.hypot(x_frac, y_frac)
-        grid[i]['alive'] = (x_frac / N) * np.exp(2j * np.pi * x_frac)
-        grid[i]['dead'] = (y_frac / N) * np.exp(2j * np.pi * y_frac)
+        #N = np.hypot(x_frac, y_frac)
+        grid[i]['alive'] = (x_frac) * np.exp(2j * np.pi * x_frac)
+        grid[i]['dead'] = (y_frac) * np.exp(2j * np.pi * y_frac)
+        
 
     def observe():
         nonlocal grid

@@ -29,13 +29,13 @@ def color_unentangled(cell, mode, color_mode_h, color_mode_s, color_mode_v):
         case ColorMode.B_ABS:
             color_h = int(360 * np.abs(cell["alive"]))
         case ColorMode.A_PHASE:
-            color_h = int(np.angle(cell["dead"], deg=True) + 180)
+            color_h = int(np.angle(cell["dead"], deg=True) % 360)
         case ColorMode.B_PHASE:
-            color_h = int(np.angle(cell["alive"], deg=True) + 180)
+            color_h = int(np.angle(cell["alive"], deg=True) % 360)
         case ColorMode.DELTA_PHASE_BA:
-            color_h = int(np.angle(cell["alive"] / cell["dead"], deg=True) + 180)
+            color_h = int(np.angle(cell["alive"] / cell["dead"], deg=True) % 360)
         case ColorMode.DELTA_PHASE_AB:
-            color_h = int(np.angle(cell["dead"] / cell["alive"], deg=True) + 180)
+            color_h = int(np.angle(cell["dead"] / cell["alive"], deg=True) % 360)
         case ColorMode.CONST:
             color_h = 0
         case _:
@@ -46,18 +46,18 @@ def color_unentangled(cell, mode, color_mode_h, color_mode_s, color_mode_v):
         case ColorMode.B_ABS:
             color_s = int(100 * np.abs(cell["alive"]))
         case ColorMode.A_PHASE:
-            color_s = int((100.0 / 360.0) * (np.angle(cell["dead"], deg=True) + 180))
+            color_s = int((100.0 / 360.0) * (np.angle(cell["dead"], deg=True) % 360))
         case ColorMode.B_PHASE:
-            color_s = int((100.0 / 360.0) * (np.angle(cell["alive"], deg=True) + 180))
+            color_s = int((100.0 / 360.0) * (np.angle(cell["alive"], deg=True) % 360))
         case ColorMode.DELTA_PHASE_BA:
             color_s = int(
                 (100.0 / 360.0)
-                * (np.angle(cell["alive"] / cell["dead"], deg=True) + 180)
+                * (np.angle(cell["alive"] / cell["dead"], deg=True) % 360)
             )
         case ColorMode.DELTA_PHASE_AB:
             color_s = int(
                 (100.0 / 360.0)
-                * (np.angle(cell["dead"] / cell["alive"], deg=True) + 180)
+                * (np.angle(cell["dead"] / cell["alive"], deg=True) % 360)
             )
         case ColorMode.CONST:
             color_s = 100
@@ -69,18 +69,18 @@ def color_unentangled(cell, mode, color_mode_h, color_mode_s, color_mode_v):
         case ColorMode.B_ABS:
             color_v = int(100 * np.abs(cell["alive"]))
         case ColorMode.A_PHASE:
-            color_v = int((100.0 / 360.0) * (np.angle(cell["dead"], deg=True) + 180))
+            color_v = int((100.0 / 360.0) * (np.angle(cell["dead"], deg=True) % 360))
         case ColorMode.B_PHASE:
-            color_v = int((100.0 / 360.0) * (np.angle(cell["alive"], deg=True) + 180))
+            color_v = int((100.0 / 360.0) * (np.angle(cell["alive"], deg=True) % 360))
         case ColorMode.DELTA_PHASE_BA:
             color_v = int(
                 (100.0 / 360.0)
-                * (np.angle(cell["alive"] / cell["dead"], deg=True) + 180)
+                * (np.angle(cell["alive"] / cell["dead"], deg=True) % 360)
             )
         case ColorMode.DELTA_PHASE_AB:
             color_v = int(
                 (100.0 / 360.0)
-                * (np.angle(cell["dead"] / cell["alive"], deg=True) + 180)
+                * (np.angle(cell["dead"] / cell["alive"], deg=True) % 360)
             )
         case ColorMode.CONST:
             color_v = 100
