@@ -2,6 +2,7 @@ import pygame
 import pygame_widgets
 import numpy as np
 from pygame_widgets.slider import Slider
+from pygame_widgets.button import Button
 
 RES_X = 1280
 RES_Y = 720
@@ -9,6 +10,11 @@ RES_Y = 720
 SLIDER_OFFSET = 100
 SLIDER_HEIGHT = 50
 SLIDER_WIDTH = RES_X // 4
+
+BUTTON_OFFSET = 100
+BUTTON_HEIGHT = 100
+BUTTON_WIDTH = 200
+BUTTON_RADIUS = 25
 
 PAN_SPEED = 10
 ZOOM_SPEED = 0.5
@@ -41,14 +47,42 @@ def main():
     screen = pygame.display.set_mode((RES_X, RES_Y))
     clock = pygame.time.Clock()
 
-    speed_slider = Slider(screen, RES_X // 2 - SLIDER_WIDTH // 2, RES_Y - SLIDER_OFFSET, SLIDER_WIDTH, SLIDER_HEIGHT, min=0, max=100, step=1)
-
     running = True
     entanglement_mode = False
     pan = pygame.Vector2()
     scale = 1.0
 
     # TODO: Initialize grid properly
+    x = np.linspace(0.0, 0.5, N_CELLS_X)
+    y = np.linspace(0.0, 0.5, N_CELLS_Y)
+    y = y.reshape((N_CELLS_Y, 1))
+    grid = x + y
+
+    def observe():
+        nonlocal grid
+        # TODO: Perform actual observation calculation
+        grid = np.ones((N_CELLS_Y, N_CELLS_X))
+
+    speed_slider = Slider(
+        screen,
+        RES_X // 2 - SLIDER_WIDTH // 2,
+        RES_Y - SLIDER_OFFSET,
+        SLIDER_WIDTH,
+        SLIDER_HEIGHT,
+        min=0,
+        max=100,
+        step=1,
+    )
+    observe_button = Button(
+        screen,
+        RES_X // 4 - BUTTON_WIDTH // 2,
+        RES_Y - BUTTON_OFFSET,
+        BUTTON_WIDTH,
+        BUTTON_HEIGHT,
+        radius=BUTTON_RADIUS,
+        onClick=observe,
+        text="Observe",
+    )
 
     while running:
         # poll for events
@@ -88,10 +122,6 @@ def main():
         screen.fill("black")
 
         # TODO: Perform grid operations
-        x = np.linspace(0.0, 0.5, N_CELLS_X)
-        y = np.linspace(0.0, 0.5, N_CELLS_Y)
-        y = y.reshape((N_CELLS_Y, 1))
-        grid = x + y
 
         draw_grid(
             screen,
