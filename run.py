@@ -1,0 +1,75 @@
+import pygame
+import numpy as np
+
+PAN_SPEED = 10
+ZOOM_SPEED = 0.5
+SCALE_MIN = 1
+SCALE_MAX = 10
+N_CELLS_X = 10
+N_CELLS_Y = 20
+CELL_SIZE = 10
+SPACING = 0.5  # spacing between cells in fraction of full cell size
+
+def draw_grid(screen, grid: np.ndarray, base: pygame.Vector2, scale, spacing):
+    for i, x in np.ndenumerate(grid):
+        pos = (
+            base
+            + pygame.Vector2(i) * scale
+            + pygame.Vector2(i).elementwise() * pygame.Vector2(spacing, spacing)
+        )
+        color = int(255 * x)
+        pygame.draw.rect(
+            screen,
+            pygame.Color(color, color, color),
+            pygame.Rect(pos, (scale, scale)),
+        )
+
+def main():
+    pygame.init()
+    screen = pygame.display.set_mode((1280, 720))
+    clock = pygame.time.Clock()
+
+    running = True
+    pan = pygame.Vector2()
+    scale = 1.0
+
+    while running:
+        # poll for events
+        # pygame.QUIT event means the user clicked X to close your window
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+
+            if event.type == pygame.MOUSEWHEEL:
+                # Zoom instead of pan when CTRL is held
+                if pygame.key.get_mods() & (pygame.K_RCTRL | pygame.K_LCTRL):
+                    scale = pygame.math.clamp(scale + event.y * ZOOM_SPEED, SCALE_MIN, SCALE_MAX)
+                else:
+                    pan += pygame.Vector2(event.x, event.y) * PAN_SPEED
+
+        # fill the screen with a color to wipe away anything from last frame
+        screen.fill("black")
+
+        x = np.linspace(0.0, 0.5, N_CELLS_X)
+        y = np.linspace(0.0, 0.5, N_CELLS_Y)
+        y = y.reshape((N_CELLS_Y, 1))
+        grid = x + y
+
+        draw_grid(
+            screen,
+            grid.transpose(),
+            pan,
+            CELL_SIZE * scale,
+            CELL_SIZE * SPACING * scale,
+        )
+
+        # flip() the display to put your work on screen
+        pygame.display.flip()
+
+        clock.tick(60)  # limits FPS to 60
+
+    pygame.quit()
+
+
+if __name__ == "__main__":
+    main()
