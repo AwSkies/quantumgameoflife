@@ -4,6 +4,7 @@ import numpy as np
 from pygame_widgets.slider import Slider
 from pygame_widgets.button import Button
 from pygame_widgets.toggle import Toggle
+from pygame_widgets.textbox import TextBox
 
 RES_X = 1280
 RES_Y = 720
@@ -23,6 +24,12 @@ MODE_TOGGLE_HEIGHT = 25
 MODE_TOGGLE_WIDTH = 50
 MODE_TOGGLE_RADIUS = 25
 
+STEP_COUNTER_OFFSET_X = 10
+STEP_COUNTER_OFFSET_Y = 10
+STEP_COUNTER_HEIGHT = 50
+STEP_COUNTER_WIDTH = 50
+STEP_COUNTER_RADIUS = 10
+
 PAN_SPEED = 10
 ZOOM_SPEED = 0.5
 SCALE_MIN = 1
@@ -31,6 +38,7 @@ N_CELLS_X = 10
 N_CELLS_Y = 20
 CELL_SIZE = 10
 SPACING = 0.5  # spacing between cells in fraction of full cell size
+SIMULATION_SPEED = 1
 
 
 def draw_grid(screen, entanglement_mode, grid: np.ndarray, base: pygame.Vector2, scale, spacing):
@@ -58,6 +66,7 @@ def main():
     entanglement_mode = False
     pan = pygame.Vector2()
     scale = 1.0
+    step = 0
 
     # TODO: Initialize grid properly
     x = np.linspace(0.0, 0.5, N_CELLS_X)
@@ -99,6 +108,15 @@ def main():
         startOn=entanglement_mode
     )
     # TODO: Make text boxes on either side of the mode toggle to indicate freeform or entanglement mode
+    step_counter = TextBox(
+        screen,
+        STEP_COUNTER_OFFSET_X,
+        STEP_COUNTER_OFFSET_Y,
+        STEP_COUNTER_WIDTH,
+        STEP_COUNTER_HEIGHT,
+        radius=STEP_COUNTER_RADIUS
+    )
+    step_counter.disable()
 
     while running:
         # poll for events
@@ -151,6 +169,12 @@ def main():
         entanglement_mode = mode_toggle.getValue()
 
         # TODO: Render the dropdowns for color selection for freeform (non-entangled) mode only if `entanglement_mode` is `False`
+
+        step_counter.setText(str(step))
+        
+        # TODO: Do step calculations based on `speed_slider.getValue()` and `SIMULATION_SPEED`. Maybe count the nunber of frames passed.
+        
+        step += 1
 
         pygame_widgets.update(events)
         # flip() the display to put your work on screen
