@@ -62,6 +62,7 @@ CELL_SIZE = 10
 SPACING = 0.5  # spacing between cells in fraction of full cell size
 SIMULATION_SPEED = 1
 
+
 def main():
     pygame.init()
     screen = pygame.display.set_mode((RES_X, RES_Y))
@@ -108,15 +109,15 @@ def main():
         RES_Y - PLAY_TOGGLE_HEIGHT - PLAY_TOGGLE_OFFSET_Y,
         PLAY_TOGGLE_WIDTH,
         PLAY_TOGGLE_HEIGHT,
-        startOn=True
+        startOn=True,
     )
     mode_toggle = Toggle(
         screen,
         MODE_TOGGLE_X,
         MODE_TOGGLE_Y,
-        MODE_TOGGLE_WIDTH, 
+        MODE_TOGGLE_WIDTH,
         MODE_TOGGLE_HEIGHT,
-        startOn=entanglement_mode
+        startOn=entanglement_mode,
     )
     h_dropdown = Dropdown(
         screen,
@@ -124,29 +125,35 @@ def main():
         MODE_TOGGLE_Y + MODE_TOGGLE_HEIGHT + HSV_DROPDOWNS_OFFSET_Y,
         HSV_DROPDOWNS_WIDTH,
         HSV_DROPDOWNS_HEIGHT,
-        'Hue',
+        "Hue",
         COLOR_OPTIONS,
-        radius=HSV_DROPDOWNS_RADIUS
+        radius=HSV_DROPDOWNS_RADIUS,
     )
     s_dropdown = Dropdown(
         screen,
         HSV_DROPDOWNS_X,
-        MODE_TOGGLE_Y + MODE_TOGGLE_HEIGHT + 2 * HSV_DROPDOWNS_OFFSET_Y + HSV_DROPDOWNS_HEIGHT,
+        MODE_TOGGLE_Y
+        + MODE_TOGGLE_HEIGHT
+        + 2 * HSV_DROPDOWNS_OFFSET_Y
+        + HSV_DROPDOWNS_HEIGHT,
         HSV_DROPDOWNS_WIDTH,
         HSV_DROPDOWNS_HEIGHT,
-        'Saturation',
+        "Saturation",
         COLOR_OPTIONS,
-        radius=HSV_DROPDOWNS_RADIUS
+        radius=HSV_DROPDOWNS_RADIUS,
     )
     l_dropdown = Dropdown(
         screen,
         HSV_DROPDOWNS_X,
-        MODE_TOGGLE_Y + MODE_TOGGLE_HEIGHT + 3 * HSV_DROPDOWNS_OFFSET_Y + 2 * HSV_DROPDOWNS_HEIGHT,
+        MODE_TOGGLE_Y
+        + MODE_TOGGLE_HEIGHT
+        + 3 * HSV_DROPDOWNS_OFFSET_Y
+        + 2 * HSV_DROPDOWNS_HEIGHT,
         HSV_DROPDOWNS_WIDTH,
         HSV_DROPDOWNS_HEIGHT,
-        'Lightness',
+        "Lightness",
         COLOR_OPTIONS,
-        radius=HSV_DROPDOWNS_RADIUS
+        radius=HSV_DROPDOWNS_RADIUS,
     )
     # TODO: Make text boxes on either side of the mode toggle to indicate freeform or entanglement mode
     step_counter = TextBox(
@@ -155,7 +162,7 @@ def main():
         STEP_COUNTER_OFFSET_Y,
         STEP_COUNTER_WIDTH,
         STEP_COUNTER_HEIGHT,
-        radius=STEP_COUNTER_RADIUS
+        radius=STEP_COUNTER_RADIUS,
     )
     step_counter.disable()
 
@@ -216,7 +223,7 @@ def main():
                 dropdown.show()
 
         step_counter.setText(str(step))
-        
+
         # TODO: Do step calculations based on `speed_slider.getValue()` and `SIMULATION_SPEED`. Maybe count the nunber of frames passed.
         if play_toggle.getValue():
             step += 1
