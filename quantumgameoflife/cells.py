@@ -9,7 +9,6 @@ def make_cell_array(x, y):
 def random_initialize(cell_matrix):
     '''
     Fill np matrix with random pairs of alive and dead complex number
-    
     Args: 
         np[][]
     '''
