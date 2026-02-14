@@ -5,6 +5,7 @@ from pygame_widgets.slider import Slider
 from pygame_widgets.button import Button
 from pygame_widgets.toggle import Toggle
 from pygame_widgets.textbox import TextBox
+from pygame_widgets.dropdown import Dropdown
 
 RES_X = 1280
 RES_Y = 720
@@ -23,12 +24,24 @@ MODE_TOGGLE_OFFSET_Y = 50
 MODE_TOGGLE_HEIGHT = 25
 MODE_TOGGLE_WIDTH = 50
 MODE_TOGGLE_RADIUS = 25
+MODE_TOGGLE_X = RES_X - MODE_TOGGLE_OFFSET_X - MODE_TOGGLE_WIDTH
+MODE_TOGGLE_Y = MODE_TOGGLE_OFFSET_Y
 
 STEP_COUNTER_OFFSET_X = 10
 STEP_COUNTER_OFFSET_Y = 10
 STEP_COUNTER_HEIGHT = 50
 STEP_COUNTER_WIDTH = 50
 STEP_COUNTER_RADIUS = 10
+
+HSV_DROPDOWNS_OFFSET_X = 25
+HSV_DROPDOWNS_OFFSET_Y = 15
+HSV_DROPDOWNS_HEIGHT = 50
+HSV_DROPDOWNS_WIDTH = 100
+HSV_DROPDOWNS_RADIUS = 10
+HSV_DROPDOWNS_X = RES_X - HSV_DROPDOWNS_WIDTH - HSV_DROPDOWNS_OFFSET_X
+
+# TODO: Make actual list of color options
+COLOR_OPTIONS = list(['a', 'b', 'c'])
 
 PAN_SPEED = 10
 ZOOM_SPEED = 0.5
@@ -101,11 +114,41 @@ def main():
     )
     mode_toggle = Toggle(
         screen,
-        RES_X - MODE_TOGGLE_OFFSET_X - MODE_TOGGLE_WIDTH,
-        MODE_TOGGLE_OFFSET_Y,
+        MODE_TOGGLE_X,
+        MODE_TOGGLE_Y,
         MODE_TOGGLE_WIDTH, 
         MODE_TOGGLE_HEIGHT,
         startOn=entanglement_mode
+    )
+    h_dropdown = Dropdown(
+        screen,
+        HSV_DROPDOWNS_X,
+        MODE_TOGGLE_Y + MODE_TOGGLE_HEIGHT + HSV_DROPDOWNS_OFFSET_Y,
+        HSV_DROPDOWNS_WIDTH,
+        HSV_DROPDOWNS_HEIGHT,
+        'Hue',
+        COLOR_OPTIONS,
+        radius=HSV_DROPDOWNS_RADIUS
+    )
+    s_dropdown = Dropdown(
+        screen,
+        HSV_DROPDOWNS_X,
+        MODE_TOGGLE_Y + MODE_TOGGLE_HEIGHT + 2 * HSV_DROPDOWNS_OFFSET_Y + HSV_DROPDOWNS_HEIGHT,
+        HSV_DROPDOWNS_WIDTH,
+        HSV_DROPDOWNS_HEIGHT,
+        'Saturation',
+        COLOR_OPTIONS,
+        radius=HSV_DROPDOWNS_RADIUS
+    )
+    l_dropdown = Dropdown(
+        screen,
+        HSV_DROPDOWNS_X,
+        MODE_TOGGLE_Y + MODE_TOGGLE_HEIGHT + 3 * HSV_DROPDOWNS_OFFSET_Y + 2 * HSV_DROPDOWNS_HEIGHT,
+        HSV_DROPDOWNS_WIDTH,
+        HSV_DROPDOWNS_HEIGHT,
+        'Lightness',
+        COLOR_OPTIONS,
+        radius=HSV_DROPDOWNS_RADIUS
     )
     # TODO: Make text boxes on either side of the mode toggle to indicate freeform or entanglement mode
     step_counter = TextBox(
@@ -152,6 +195,8 @@ def main():
                 else:
                     pan += pygame.Vector2(event.x, event.y) * PAN_SPEED
 
+        entanglement_mode = mode_toggle.getValue()
+
         # fill the screen with a color to wipe away anything from last frame
         screen.fill("black")
 
@@ -166,9 +211,11 @@ def main():
             CELL_SIZE * SPACING * scale,
         )
 
-        entanglement_mode = mode_toggle.getValue()
-
-        # TODO: Render the dropdowns for color selection for freeform (non-entangled) mode only if `entanglement_mode` is `False`
+        for dropdown in [l_dropdown, s_dropdown, h_dropdown]:
+            if entanglement_mode:
+                dropdown.show()
+            else:
+                dropdown.hide()
 
         step_counter.setText(str(step))
         
