@@ -20,7 +20,7 @@ CELL_SIZE = 10
 SPACING = 0.5  # spacing between cells in fraction of full cell size
 
 
-def draw_grid(screen, grid: np.ndarray, base: pygame.Vector2, scale, spacing):
+def draw_grid(screen, entanglement_mode, grid: np.ndarray, base: pygame.Vector2, scale, spacing):
     for i, x in np.ndenumerate(grid):
         pos = (
             base
@@ -44,6 +44,7 @@ def main():
     speed_slider = Slider(screen, RES_X // 2 - SLIDER_WIDTH // 2, RES_Y - SLIDER_OFFSET, SLIDER_WIDTH, SLIDER_HEIGHT, min=0, max=100, step=1)
 
     running = True
+    entanglement_mode = False
     pan = pygame.Vector2()
     scale = 1.0
 
@@ -94,6 +95,7 @@ def main():
 
         draw_grid(
             screen,
+            entanglement_mode,
             grid.transpose(),
             pan,
             CELL_SIZE * scale,
