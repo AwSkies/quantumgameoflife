@@ -40,6 +40,7 @@ def visualize_color_space(width=5, height=5):
         for x in range(width):
             #test_cell.random_initialize()
             cells[x][y].random_initialize()
+            #cells[x][y].a.real
             #h = (cells[x][y].phase + cmath.pi )/ (2 * cmath.pi)
             h = 0.7
             s = counter#cells[x][y].b.real
