@@ -10,4 +10,3 @@ class DisplayType(StrEnum):
     phase_b= 'Argument b'
     phase_difference_ba = 'phase difference b-a'
     phase_difference_ab = 'phase difference a-b'
-    #UNKNOWN = auto()
