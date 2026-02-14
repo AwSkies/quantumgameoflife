@@ -28,7 +28,7 @@ def draw_grid(screen, entanglement_mode, grid: np.ndarray, base: pygame.Vector2,
             + pygame.Vector2(i).elementwise() * pygame.Vector2(spacing, spacing)
         )
         # TODO: Interpret color properly
-        color_H = int(360 * x)
+        color_H = int(360 * ((x + np.pi) / (2 * np.pi)))
         color_S = int(100 * x)
         color_L = int(100 * x)
         color_A = 100
