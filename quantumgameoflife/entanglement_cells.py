@@ -2,18 +2,25 @@ import numpy as np
 
 
 class Lattice:
-    def __init__(self, x, y):
+    def __init__(self, x : int, y : int):
         self.x = x
         self.y = y
+        self.dims = np.array([x, y])
+        self.cutoff_for_states = 0.8
 
         #an array of states; self.states[n] = a 3 x 3 array representing the nth state
         self.states = create_states()
 
-
         self.next_center_states = np.array([next_center_state(self.states[i]) for i in range(0, 512)])
 
         #grid in ford [x, y, an], with a coefficient of nth state
-        self.grid = create_cells
+        self.initialize_grid(x, y, 0)
+        self.alive_magnitudes = None
+        self.magnitudes = None
+
+        self.normalize_grid_and_update_magnitudes()
+        print(self.grid[:, :, 0])
+        print(self.alive_magnitudes)
 
         #self.states_alive[neighbour_number, state_group_number] = [list of state indices in neighbour]
         #self.states_dead[neighbour_number, state_group_number]
@@ -23,7 +30,9 @@ class Lattice:
         #self.common_indices_1[neighbour_number] gives indices in common for a cell with its neighbour
         #neigbour number 0 is cell directly up, then it goes clockwise
 
-
+        self.neighbour_offsets = np.array([
+            [-1, 0], [-1, 1], [0, 1], [1, 1], [1, 0], [1, -1], [0, -1], [-1, -1]
+        ])
 
         self.common_indices_1 = [
             [(0, 0), (0, 1), (0, 2), (1, 0), (1, 1), (1, 2)],
@@ -36,13 +45,18 @@ class Lattice:
             [(0, 0), (0, 1), (1, 0), (1, 1)]
         ]
 
-        # print(self.states[1][self.common_indices_1[0]])
-        # r, c = zip(*[(1, 1),(0, 0), (0, 0)])
-        # print(self.states[1][r, c])
-
         self.common_indices_neighbour = [self.common_indices_1[(i + 4) % 8] for i in range(8)]
 
-        self.state_group_number = np.zeros((512, 8), dtype=int)
+
+        #change orders of indices:
+        new_neighbour_ordering = [7, 0, 1, 6, 2, 5, 4, 3]
+        self.neighbour_offsets = self.neighbour_offsets[new_neighbour_ordering]
+        self.common_indices_neighbour = [self.common_indices_neighbour[i] for i in new_neighbour_ordering]
+        self.common_indices_1 = [self.common_indices_1[i] for i in new_neighbour_ordering]
+
+
+
+        self.state_group_number = np.zeros((8, 512), dtype=int)
 
         self.states_alive = []
         self.states_dead = []
@@ -70,7 +84,7 @@ class Lattice:
                 for i in range(512):
                     state = self.states[i]
                     if np.all(state[r_1, c_1] == b_array):
-                        self.state_group_number[i] = state_group_number
+                        self.state_group_number[neighbour_number, i] = state_group_number
                         for j in range(512):
                             state_j = self.states[j]
                             if np.all(state_j[r_neighbour, c_neighbour] == b_array):
@@ -79,32 +93,154 @@ class Lattice:
                                 else:
                                     self.states_dead[-1][-1].append(j)
 
+    def step(self):
+        self.update_cells()
 
-    def get_coefficients_for_index_values(self, pos, offset, state, coefficient_grid):
-        
+    def update_cells(self):
+        pos = np.array([0, 0])
+        all_state_numbers = np.arange(0, 512)
 
-        #
-    # def update_grid(self):
-    #     get_shifted_probabilities()
+        new_grid = np.zeros_like(self.grid)
+        for x in range(self.x):
+            print(f"x: {x}")
+            pos[1] = 0
+            for y in range(self.y):
+                print(f"y: {y}")
+                if self.cutoff_for_states:
+                    state_numbers = self.get_more_prominent_states(self.magnitudes[pos[0], pos[1]], self.cutoff_for_states)
+                else:
+                    state_numbers = all_state_numbers
+                new_coefficients = self.get_new_cell_coefficients(pos, state_numbers, self.grid[pos[0], pos[1]])
+                new_grid[pos[0], pos[1]] = new_coefficients
+        self.grid = new_grid
+        self.normalize_grid_and_update_magnitudes()
+
+    def remove_0_states(self):
+        for x in range(self.grid.shape[0]):
+            for y in range(self.grid.shape[1]):
+                if not np.any(self.grid[x, y]):
+                    self.grid[x, y, 0] = 1
+
+    def initialize_grid(self, x, y, configuration_number):
+
+        if configuration_number == 0: #blinker
+            indices = [(4,3), (4, 4), (4, 5)]
+            self.grid = self.get_grid_for_single_state(x, y, indices)
+        else:
+            raise(NotImplementedError)
+
+    def get_grid_for_single_state(self, x, y, indices):
+        binary_grid = np.zeros((x, y))
+        for index in indices:
+            binary_grid[index[0], index[1]] = 1
+        grid = np.zeros((x, y, 512), dtype=np.complex128)
+
+        for i in range(x):
+            for j in range(y):
+                rows = [(i - 1) % x, i % x, (i + 1) % x]
+                cols = [(j - 1) % y, j % y, (j + 1) % y]
+
+                subarray = binary_grid[np.ix_(rows, cols)]
+                state_number = get_state_number(subarray)
+                grid[i, j, state_number] = 1
+
+        return grid
+
+    def add_pos(self, pos, offset):
+        return (pos + offset) % self.dims
+
+    def get_coefficients_for_index_values(self, pos, neighbour_number, state_number, coefficient_grid):
+        neighbour_states_alive = self.states_alive[neighbour_number][self.state_group_number[neighbour_number, state_number]]
+        neighbour_states_dead = self.states_dead[neighbour_number][self.state_group_number[neighbour_number, state_number]]
+        neighbour_pos = self.add_pos(pos, self.neighbour_offsets[neighbour_number])
+        alive_coefficients = coefficient_grid[neighbour_pos[0], neighbour_pos[1], neighbour_states_alive]
+        dead_coefficients = coefficient_grid[neighbour_pos[0], neighbour_pos[1], neighbour_states_dead]
+        return np.sum(alive_coefficients), np.sum(dead_coefficients)
 
 
-def create_cells(x: int, y: int):
-    return np.zeros((x, y, 512), dtype=np.complex128)
+
+
+    def get_coefficients_for_state(self, pos, state_number):
+        coefficients = np.zeros((8, 2), dtype=np.complex128)
+        for neighbour_number in range(8):
+            coefficients[neighbour_number] = self.get_coefficients_for_index_values(pos, neighbour_number, state_number, self.grid)
+        return coefficients
+
+    def normalize_grid_and_update_magnitudes(self):
+        self.remove_0_states()
+        magnitudes = np.abs(self.grid)**2
+        cell_magnitudes = np.sum(magnitudes, axis=2)
+        print(cell_magnitudes.shape)
+        self.grid = self.grid / cell_magnitudes[:, :, np.newaxis]**0.5
+        self.magnitudes = np.abs(self.grid) ** 2
+        self.alive_magnitudes = np.sum(self.magnitudes[:, :, 256::], axis=2)
+
+    def get_state_numbers(self):
+        return np.arange(0, 512)
+
+    def get_more_prominent_states(self, magnitudes, cutoff):
+        indices = np.argsort(magnitudes)[::-1]
+        sorted_magnitudes = magnitudes[indices]
+        s = 0
+        for i in range(len(indices)):
+            s += sorted_magnitudes[i]
+            if s >= cutoff:
+                return indices[:i+1]
+
+        return indices
+
+    def get_new_cell_coefficients(self, pos, state_numbers, current_coefficients):
+        coefficient_sets = np.array([self.get_coefficients_for_state(pos, state_number) for state_number in state_numbers])
+        # coefficient_sets = np.array([[[0, 1], [1, 0], [1, 1], [0, 1], [0, 1], [0, 1], [0, 1], [0, 1]], [[0, 1], [0, 1], [0, 1], [0, 1], [0, 1], [0, 1], [0, 1], [0.5, 1]]])
+        # coefficient_sets = np.array([[1, 1], [0, 1], [0, 1], [0, 1], [0, 1], [0, 1], [0, 1], [0.5, 1]])
+
+        # Assuming coefficient_sets has shape (n, 8, 2)
+        n = coefficient_sets.shape[0]
+
+        # Start with the first row for all n samples
+        r = coefficient_sets[:, 0, :].copy()  # shape (n, 2)
+
+        # Iteratively compute products
+        for i in range(1, 8):
+            # r[:, :, np.newaxis] has shape (n, current_size, 1)
+            # coefficient_sets[:, i, np.newaxis, :] has shape (n, 1, 2)
+            # Broadcasting creates (n, current_size, 2), then flatten last two dims
+            r = (r[:, :, np.newaxis] * coefficient_sets[:, i, np.newaxis, :]).reshape(n, -1)
+
+        r = r[:, ::-1]
+        alive_indices = self.next_center_states[state_numbers]
+        states_alive = r[alive_indices]*current_coefficients[state_numbers[alive_indices]][:, np.newaxis]
+        states_dead = r[~alive_indices]*current_coefficients[state_numbers[~alive_indices]][:, np.newaxis]
+
+        new_coefficient_sets_alive = np.sum(states_alive, axis=0)
+        new_coefficient_sets_dead = np.sum(states_dead, axis=0)
+
+        new_coefficients = np.concatenate([new_coefficient_sets_dead, new_coefficient_sets_alive])
+        if not np.any(new_coefficients):
+            new_coefficients[0] = 1
+        return new_coefficients
 
 def create_states():
     n = 9
     total = 2 ** n
     numbers = np.arange(total)
     binary_arrays = ((numbers[:, None] >> np.arange(n - 1, -1, -1)) & 1)
-    states = binary_arrays.reshape(512, 3, 3)
-    states = states[:, ::-1, ::-1]
+    # binary_arrays = binary_arrays[:, [0, 1, 2, 3, 5, 6, 7, 8, 4]]
+    indices = np.array([[0, 1, 2],
+                        [3, 8, 4],
+                        [5, 6, 7]])
+    indices = -indices + 8
+    states = binary_arrays[:, indices]
+    # states = binary_arrays.reshape(512, 3, 3)
+    # states = states[:, ::-1, ::-1]
     return states.astype(bool)
 
 def get_state_number(state):
     s = 0
+    indices = np.array([[0, 0], [0, 1], [0, 2], [1, 0], [1, 2], [2, 0], [2, 1], [2, 2], [1, 1]])
     for i in range(9):
-        s += 2**i * state[i // 3, i % 3]
-    return s
+        s += 2**i * state[indices[i, 0], indices[i, 1]]
+    return int(s)
 
 def next_center_state(grid):
     """
@@ -138,9 +274,13 @@ def nth_binary_array(n, k):
 
     return ((n >> np.arange(k-1, -1, -1)) & 1).astype(int)
 
-print(nth_binary_array(4, 6))
 
 l = Lattice(10, 10)
+
+for i in range(10):
+    l.update_cells()
+
+# l.update_cell_coefficients(np.array([1, 1]), [1])
 # states = create_states()
 # print(states)
 
