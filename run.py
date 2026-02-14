@@ -208,7 +208,7 @@ def main():
                 ):
                     pan += pygame.Vector2(event.y, 0) * PAN_SPEED
                 else:
-                    pan += pygame.Vector2(event.x, event.y) * PAN_SPEED
+                    pan += pygame.Vector2(event.x, -event.y) * PAN_SPEED
 
         entanglement_mode = mode_toggle.getValue()
 
