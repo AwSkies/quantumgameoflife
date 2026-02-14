@@ -10,6 +10,7 @@ N_CELLS_Y = 20
 CELL_SIZE = 10
 SPACING = 0.5  # spacing between cells in fraction of full cell size
 
+
 def draw_grid(screen, grid: np.ndarray, base: pygame.Vector2, scale, spacing):
     for i, x in np.ndenumerate(grid):
         pos = (
@@ -17,12 +18,14 @@ def draw_grid(screen, grid: np.ndarray, base: pygame.Vector2, scale, spacing):
             + pygame.Vector2(i) * scale
             + pygame.Vector2(i).elementwise() * pygame.Vector2(spacing, spacing)
         )
+        # TODO: Interpret color properly
         color = int(255 * x)
         pygame.draw.rect(
             screen,
             pygame.Color(color, color, color),
             pygame.Rect(pos, (scale, scale)),
         )
+
 
 def main():
     pygame.init()
@@ -32,6 +35,8 @@ def main():
     running = True
     pan = pygame.Vector2()
     scale = 1.0
+
+    # TODO: Initialize grid properly
 
     while running:
         # poll for events
@@ -51,16 +56,17 @@ def main():
 
                     # Apply zoom
                     new_scale = pygame.math.clamp(
-                        scale + event.y * ZOOM_SPEED,
-                        SCALE_MIN,
-                        SCALE_MAX
+                        scale + event.y * ZOOM_SPEED, SCALE_MIN, SCALE_MAX
                     )
 
                     # Adjust pan so the world point under cursor stays fixed
                     pan = mouse_pos - world_pos * new_scale
 
                     scale = new_scale
-                elif mod_keys & (pygame.KMOD_LSHIFT | pygame.KMOD_RSHIFT) and not event.touch:
+                elif (
+                    mod_keys & (pygame.KMOD_LSHIFT | pygame.KMOD_RSHIFT)
+                    and not event.touch
+                ):
                     pan += pygame.Vector2(event.y, 0) * PAN_SPEED
                 else:
                     pan += pygame.Vector2(event.x, event.y) * PAN_SPEED
@@ -68,6 +74,7 @@ def main():
         # fill the screen with a color to wipe away anything from last frame
         screen.fill("black")
 
+        # TODO: Perform grid operations
         x = np.linspace(0.0, 0.5, N_CELLS_X)
         y = np.linspace(0.0, 0.5, N_CELLS_Y)
         y = y.reshape((N_CELLS_Y, 1))
