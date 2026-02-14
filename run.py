@@ -82,7 +82,7 @@ def main():
                 ):
                     pan += pygame.Vector2(event.y, 0) * PAN_SPEED
                 else:
-                    pan += pygame.Vector2(event.x, event.y) * PAN_SPEED
+                    pan += pygame.Vector2(event.x, -event.y) * PAN_SPEED
 
         # fill the screen with a color to wipe away anything from last frame
         screen.fill("black")
