@@ -3,6 +3,7 @@ import pygame_widgets
 import numpy as np
 from pygame_widgets.slider import Slider
 from pygame_widgets.button import Button
+from pygame_widgets.toggle import Toggle
 
 RES_X = 1280
 RES_Y = 720
@@ -15,6 +16,12 @@ BUTTON_OFFSET = 100
 BUTTON_HEIGHT = 100
 BUTTON_WIDTH = 200
 BUTTON_RADIUS = 25
+
+MODE_TOGGLE_OFFSET_X = 50
+MODE_TOGGLE_OFFSET_Y = 50
+MODE_TOGGLE_HEIGHT = 25
+MODE_TOGGLE_WIDTH = 50
+MODE_TOGGLE_RADIUS = 25
 
 PAN_SPEED = 10
 ZOOM_SPEED = 0.5
@@ -83,6 +90,15 @@ def main():
         onClick=observe,
         text="Observe",
     )
+    mode_toggle = Toggle(
+        screen,
+        RES_X - MODE_TOGGLE_OFFSET_X - MODE_TOGGLE_WIDTH,
+        MODE_TOGGLE_OFFSET_Y,
+        MODE_TOGGLE_WIDTH, 
+        MODE_TOGGLE_HEIGHT,
+        startOn=entanglement_mode
+    )
+    # TODO: Make text boxes on either side of the mode toggle to indicate freeform or entanglement mode
 
     while running:
         # poll for events
@@ -131,6 +147,10 @@ def main():
             CELL_SIZE * scale,
             CELL_SIZE * SPACING * scale,
         )
+
+        entanglement_mode = mode_toggle.getValue()
+
+        # TODO: Render the dropdowns for color selection for freeform (non-entangled) mode only if `entanglement_mode` is `False`
 
         pygame_widgets.update(events)
         # flip() the display to put your work on screen
