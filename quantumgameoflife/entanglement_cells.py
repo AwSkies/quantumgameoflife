@@ -17,8 +17,8 @@ class Lattice:
 
         #grid in ford [x, y, an], with a coefficient of nth state
         self.initialize_grid(x, y, 0)
-        self.alive_magnitudes = None
-        self.magnitudes = None
+        self.alive_magnitudes = np.zeros((x, y))
+        self.magnitudes = np.zeros((x, y))
 
         self.normalize_grid_and_update_magnitudes()
         print(self.grid[:, :, 0])
