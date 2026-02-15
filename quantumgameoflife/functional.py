@@ -5,6 +5,7 @@ from .qubit import *
 class Functions(StrEnum):
     ADDITION = "Addition"
     MULTIPLICATION = "Multiplication"
+    PHASE_MOD_ADDITION = "θ, r Addition"
     CONWAY = "Conway"
     BOTCHED_CONWAY = "Botched conway"
 
@@ -12,7 +13,7 @@ class Lattice:
 
     def __init__(self, x, y) -> None:
         self.grid = make_cell_array(x, y)
-        fixed_initialize(self.grid, 1, 0)
+        random_initialize(self.grid)
         self.function = None
 
     def set_function(self, f):
@@ -26,6 +27,8 @@ class Lattice:
                 f = self.addition
             case Functions.MULTIPLICATION:
                 f = self.multiplication
+            case Functions.PHASE_MOD_ADDITION:
+                f = self.phase_modulus_addition
             case Functions.CONWAY:
                 f = self.conway
             case Functions.BOTCHED_CONWAY:
@@ -54,6 +57,12 @@ class Lattice:
     def multiplication(self, cell, neighbors: list):
         a_new = np.prod([n["dead"] for n in neighbors])
         b_new = np.prod([n["alive"] for n in neighbors])
+        set_cell_value(cell, a_new, b_new)
+
+    def phase_modulus_addition(self, cell, neighbors: list):
+        N = len(neighbors)
+        a_new = np.sum([np.abs(n["dead"]) for n in neighbors]) / N * np.exp(1j * np.sum([np.angle(n["dead"]) for n in neighbors]))
+        b_new = np.sum([np.abs(n["alive"]) for n in neighbors]) / N * np.exp(1j * np.sum([np.angle(n["alive"]) for n in neighbors]))
         set_cell_value(cell, a_new, b_new)
 
     def conway(self, cell, neighbors: list):
