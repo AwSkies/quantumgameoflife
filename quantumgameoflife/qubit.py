@@ -38,9 +38,13 @@ def normalize_cells(grid):
 
 
 def normalize(cell):
-    norm = np.hypot(abs(cell["alive"]), abs(cell["dead"]))
-    cell["dead"] /= norm
-    cell["alive"] /= norm
+    if np.abs(cell["dead"]) < 0.0001 and np.abs(cell["alive"]) < 0.0001:
+        cell["dead"] = 1
+        cell["alive"] = 0
+    else:
+        norm = np.hypot(abs(cell["alive"]), abs(cell["dead"]))
+        cell["dead"] /= norm
+        cell["alive"] /= norm
 
 
 def phase_difference(cell):
