@@ -77,22 +77,11 @@ def main():
     step_frames = 0
 
     entangled_lattice = entanglement_cells.Lattice(N_CELLS_X, N_CELLS_Y)
-
-    # TODO: Initialize grid properly
-    grid = functional_cells.make_cell_array(N_CELLS_X, N_CELLS_Y)
-    functional_cells.fixed_initialize(grid, complex(1, 1), complex(-1, 1))
-    # for i, s in np.ndenumerate(grid):
-    #     x, y = i
-    #     x_frac = x / N_CELLS_X + 1e-5
-    #     y_frac = y / N_CELLS_Y + 1e-5
-    #     grid[i]["alive"] = x_frac * np.exp(2j * np.pi * x_frac)
-    #     grid[i]["dead"] = y_frac * np.exp(2j * np.pi * y_frac)
-    functional_cells.normalize_cells(grid)
+    functional_lattice = functional_cells.Lattice(N_CELLS_X, N_CELLS_Y)
 
     def observe():
-        nonlocal grid
-        # TODO: Perform actual observation calculation
-        grid = np.ones((N_CELLS_Y, N_CELLS_X))
+        # TODO: Perform actual observation calculation on the correct lattice object depending on the mode
+        ...
 
     speed_slider = Slider(
         screen,
@@ -120,7 +109,7 @@ def main():
         RES_Y - PLAY_TOGGLE_HEIGHT - PLAY_TOGGLE_OFFSET_Y,
         PLAY_TOGGLE_WIDTH,
         PLAY_TOGGLE_HEIGHT,
-        startOn=True,
+        startOn=False,
     )
     mode_toggle = Toggle(
         screen,
@@ -165,6 +154,19 @@ def main():
         "Value",
         COLOR_OPTIONS,
         radius=HSV_DROPDOWNS_RADIUS,
+    )
+    function_dropdown = Dropdown(
+        screen,
+        HSV_DROPDOWNS_X,
+        MODE_TOGGLE_Y
+        + MODE_TOGGLE_HEIGHT
+        + 4 * HSV_DROPDOWNS_OFFSET_Y
+        + 3 * HSV_DROPDOWNS_HEIGHT,
+        HSV_DROPDOWNS_WIDTH,
+        HSV_DROPDOWNS_HEIGHT,
+        "Function",
+        list(functional_cells.Functions),
+        radius=HSV_DROPDOWNS_RADIUS
     )
     # TODO: Make text boxes on either side of the mode toggle to indicate freeform or entanglement mode
     step_counter = TextBox(
@@ -217,10 +219,8 @@ def main():
             step += 1
             if entanglement_mode:
                 entangled_lattice.step()
-                ...
             else:
-                # TODO: Perform grid operations in functional mode
-                ...
+                functional_lattice.step()
             step_frames = 0
 
         # fill the screen with a color to wipe away anything from last frame
@@ -229,7 +229,7 @@ def main():
         if entanglement_mode:
             grid = entangled_lattice.alive_magnitudes
         else:
-            ...
+            grid = functional_lattice.grid
 
         draw_grid(
             screen,
