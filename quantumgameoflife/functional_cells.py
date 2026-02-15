@@ -9,11 +9,10 @@ def make_cell_array(x, y):
 
 
 def fixed_initialize(cell_matrix, a, b):
-    for row in cell_matrix:
-        for cell in row:
-            cell["dead"] = a
-            cell["alive"] = b
-            normalize(cell)
+    for i, c in np.ndenumerate(cell_matrix):
+        c["dead"] = a
+        c["alive"] = b
+        normalize(c)
 
 
 def random_initialize(cell_matrix):
