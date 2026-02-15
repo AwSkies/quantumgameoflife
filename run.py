@@ -74,11 +74,12 @@ PHASE2_Y = RES_Y - EDITOR_OPTIONS_OFFSET_Y - EDITOR_OPTIONS_HEIGHT
 
 CLEAR_BUTTON_OFFSET_X = EDITOR_OPTIONS_OFFSET_X
 CLEAR_BUTTON_OFFSET_Y = EDITOR_OPTIONS_OFFSET_Y
-CLEAR_BUTTON_WIDTH = EDITOR_OPTIONS_WIDTH
+CLEAR_BUTTON_WIDTH = 125
 CLEAR_BUTTON_HEIGHT = 75
 CLEAR_BUTTON_RADIUS = 10
 CLEAR_BUTTON_Y = ALIVE_Y - CLEAR_BUTTON_OFFSET_Y - CLEAR_BUTTON_HEIGHT
 CLEAR_BUTTON_X = RES_X - CLEAR_BUTTON_WIDTH - CLEAR_BUTTON_OFFSET_X
+CLEAR_BUTTON_FONT_SIZE = 40
 
 COLOR_OPTIONS = list(ColorMode)
 
@@ -163,6 +164,7 @@ def main():
         radius=OBSERVE_BUTTON_RADIUS,
         onClick=observe,
         text="Observe",
+        fontSize=50,
     )
     play_toggle = Toggle(
         screen,
@@ -181,6 +183,7 @@ def main():
         "Game mode",
         list(GameMode),
         fontSize=DROPDOWN_FONT_SIZE,
+        borderRadius=MODE_OPTIONS_RADIUS,
     )
     h_dropdown = Dropdown(
         screen,
@@ -191,7 +194,7 @@ def main():
         "Hue",
         COLOR_OPTIONS,
         fontSize=DROPDOWN_FONT_SIZE,
-        radius=MODE_OPTIONS_RADIUS,
+        borderRadius=MODE_OPTIONS_RADIUS,
     )
     s_dropdown = Dropdown(
         screen,
@@ -202,7 +205,7 @@ def main():
         "Saturation",
         COLOR_OPTIONS,
         fontSize=DROPDOWN_FONT_SIZE,
-        radius=MODE_OPTIONS_RADIUS,
+        borderRadius=MODE_OPTIONS_RADIUS,
     )
     v_dropdown = Dropdown(
         screen,
@@ -213,7 +216,7 @@ def main():
         "Value",
         COLOR_OPTIONS,
         fontSize=DROPDOWN_FONT_SIZE,
-        radius=MODE_OPTIONS_RADIUS,
+        borderRadius=MODE_OPTIONS_RADIUS,
     )
     function_dropdown = Dropdown(
         screen,
@@ -224,7 +227,7 @@ def main():
         "Function",
         list(functional.Functions),
         fontSize=DROPDOWN_FONT_SIZE,
-        radius=MODE_OPTIONS_RADIUS,
+        borderRadius=MODE_OPTIONS_RADIUS,
     )
     phase_toggle = Toggle(
         screen,
@@ -243,7 +246,7 @@ def main():
         "Preset",
         entanglement_presets,
         fontSize=DROPDOWN_FONT_SIZE,
-        radius=MODE_OPTIONS_RADIUS,
+        borderRadius=MODE_OPTIONS_RADIUS,
     )
     preset_button = Button(
         screen,
@@ -270,6 +273,7 @@ def main():
         radius=CLEAR_BUTTON_RADIUS,
         onClick=clear,
         text="Clear",
+        fontSize=CLEAR_BUTTON_FONT_SIZE,
     )
     alive_slider = Slider(
         screen,
