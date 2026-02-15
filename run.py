@@ -44,6 +44,9 @@ MODE_OPTIONS_HEIGHT = 50
 MODE_OPTIONS_WIDTH = 100
 MODE_OPTIONS_RADIUS = 10
 MODE_OPTIONS_X = RES_X - MODE_OPTIONS_WIDTH - MODE_OPTIONS_OFFSET_X
+PHASE_TOGGLE_WIDTH = 50
+PHASE_TOGGLE_HEIGHT = 25
+PHASE_TOGGLE_OFFSET_X = 15
 
 EDITOR_OPTIONS_OFFSET_X = 25
 EDITOR_OPTIONS_OFFSET_Y = 25
@@ -82,7 +85,6 @@ def main():
     running = True
     game_mode = GameMode.FUNCTIONAL
     qubits = True
-    hamiltonian_phase_switch = False
     pan = pygame.Vector2()
     scale = 1.0
     step = 0
@@ -175,6 +177,14 @@ def main():
         list(functional.Functions),
         radius=MODE_OPTIONS_RADIUS,
     )
+    phase_toggle = Toggle(
+        screen,
+        MODE_OPTIONS_X + PHASE_TOGGLE_OFFSET_X,
+        MODE_OPTIONS_HEIGHT + 2 * MODE_OPTIONS_OFFSET_Y,
+        PHASE_TOGGLE_WIDTH,
+        PHASE_TOGGLE_HEIGHT,
+        startOn=False
+    )
     alive_slider = Slider(
         screen,
         EDITOR_OPTIONS_X,
@@ -208,7 +218,6 @@ def main():
         step=1,
         initial=0,
     )
-    # TODO: Make text boxes on either side of the mode toggle to indicate freeform or entanglement mode
     step_counter = TextBox(
         screen,
         STEP_COUNTER_OFFSET_X,
@@ -218,6 +227,7 @@ def main():
         radius=STEP_COUNTER_RADIUS,
     )
     step_counter.disable()
+    # TODO: Make labels
 
     while running:
         game_mode = mode_dropdown.getSelected()
@@ -293,7 +303,7 @@ def main():
                 case GameMode.ENTANGLEMENT:
                     entangled_lattice.step()
                 case GameMode.HAMILTONIAN:
-                    hamiltonian_lattice.step(hamiltonian_phase_switch)
+                    hamiltonian_lattice.step(phase_toggle.getValue())
 
         functional_lattice.set_function(function_dropdown.getSelected())
 
@@ -354,6 +364,12 @@ def main():
             h_dropdown,
         ]:
             if game_mode == GameMode.FUNCTIONAL:
+                component.show()
+            else:
+                component.hide()
+        
+        for component in [phase_toggle]:
+            if game_mode == GameMode.HAMILTONIAN:
                 component.show()
             else:
                 component.hide()
