@@ -2,7 +2,9 @@ import numpy as np
 import pygame
 
 from .display_type import ColorMode
+from .game_mode import GameMode
 
+LIFE_THRESHOLD = 0.5
 COLOR_ALPHA = 1.0
 
 
@@ -15,7 +17,19 @@ def color_entangled(cell):
     return color
 
 
-def color_unentangled(cell, color_mode_h, color_mode_s, color_mode_v):
+def color_hamiltonian(cell):
+    color_h = int(np.angle(cell["alive"], deg=True) % 360)
+    color_s = int(100 * np.abs(cell["alive"]))
+    if np.abs(cell["alive"]) ** 2 > LIFE_THRESHOLD:
+        color_v = 100
+    else:
+        color_v = 0
+    color = pygame.Color(0, 0, 0)
+    color.hsva = (color_h, color_s, color_v, COLOR_ALPHA)
+    return color
+
+
+def color_functional(cell, color_mode_h, color_mode_s, color_mode_v):
     color = pygame.Color(0, 0, 0)
     # Set defaults for if no mode is selected
     if color_mode_h == None:
@@ -37,9 +51,15 @@ def color_unentangled(cell, color_mode_h, color_mode_s, color_mode_v):
         case ColorMode.B_PHASE:
             color_h = int(np.angle(cell["alive"], deg=True) % 360)
         case ColorMode.DELTA_PHASE_BA:
-            color_h = int(np.angle(cell["alive"] / cell["dead"], deg=True) % 360)
+            color_h = int(
+                (np.angle(cell["alive"], deg=True) - np.angle(cell["dead"], deg=True))
+                % 360
+            )
         case ColorMode.DELTA_PHASE_AB:
-            color_h = int(np.angle(cell["dead"] / cell["alive"], deg=True) % 360)
+            color_h = int(
+                (np.angle(cell["dead"], deg=True) - np.angle(cell["alive"], deg=True))
+                % 360
+            )
         case ColorMode.CONST:
             color_h = 0
         case _:
@@ -56,12 +76,24 @@ def color_unentangled(cell, color_mode_h, color_mode_s, color_mode_v):
         case ColorMode.DELTA_PHASE_BA:
             color_s = int(
                 (100.0 / 360.0)
-                * (np.angle(cell["alive"] / cell["dead"], deg=True) % 360)
+                * (
+                    (
+                        np.angle(cell["alive"], deg=True)
+                        - np.angle(cell["dead"], deg=True)
+                    )
+                    % 360
+                )
             )
         case ColorMode.DELTA_PHASE_AB:
             color_s = int(
                 (100.0 / 360.0)
-                * (np.angle(cell["dead"] / cell["alive"], deg=True) % 360)
+                * (
+                    (
+                        np.angle(cell["dead"], deg=True)
+                        - np.angle(cell["alive"], deg=True)
+                    )
+                    % 360
+                )
             )
         case ColorMode.CONST:
             color_s = 100
@@ -79,12 +111,24 @@ def color_unentangled(cell, color_mode_h, color_mode_s, color_mode_v):
         case ColorMode.DELTA_PHASE_BA:
             color_v = int(
                 (100.0 / 360.0)
-                * (np.angle(cell["alive"] / cell["dead"], deg=True) % 360)
+                * (
+                    (
+                        np.angle(cell["alive"], deg=True)
+                        - np.angle(cell["dead"], deg=True)
+                    )
+                    % 360
+                )
             )
         case ColorMode.DELTA_PHASE_AB:
             color_v = int(
                 (100.0 / 360.0)
-                * (np.angle(cell["dead"] / cell["alive"], deg=True) % 360)
+                * (
+                    (
+                        np.angle(cell["dead"], deg=True)
+                        - np.angle(cell["alive"], deg=True)
+                    )
+                    % 360
+                )
             )
         case ColorMode.CONST:
             color_v = 100
@@ -96,20 +140,23 @@ def color_unentangled(cell, color_mode_h, color_mode_s, color_mode_v):
 
 def get_color(
     cell,
-    mode,
+    game_mode,
     color_mode_h: ColorMode,
     color_mode_s: ColorMode,
     color_mode_v: ColorMode,
 ):
-    if mode:
-        return color_entangled(cell)
-    else:
-        return color_unentangled(cell, color_mode_h, color_mode_s, color_mode_v)
+    match game_mode:
+        case GameMode.FUNCTIONAL:
+            return color_functional(cell, color_mode_h, color_mode_s, color_mode_v)
+        case GameMode.ENTANGLEMENT:
+            return color_entangled(cell)
+        case GameMode.HAMILTONIAN:
+            return color_hamiltonian(cell)
 
 
 def draw_grid(
     screen,
-    entanglement_mode,
+    game_mode,
     grid: np.ndarray,
     base: pygame.Vector2,
     scale,
@@ -118,6 +165,7 @@ def draw_grid(
     color_mode_s,
     color_mode_v,
 ):
+    drawn = np.zeros(np.shape(grid), dtype=pygame.Rect)
     for i, x in np.ndenumerate(grid):
         pos = (
             base
@@ -125,12 +173,11 @@ def draw_grid(
             + pygame.Vector2(i).elementwise() * pygame.Vector2(spacing, spacing)
         )
 
-        color = get_color(
-            x, entanglement_mode, color_mode_h, color_mode_s, color_mode_v
-        )
+        color = get_color(x, game_mode, color_mode_h, color_mode_s, color_mode_v)
 
-        pygame.draw.rect(
+        drawn[i] = pygame.draw.rect(
             screen,
             color,
             pygame.Rect(pos, (scale, scale)),
         )
+    return drawn

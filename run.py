@@ -6,9 +6,11 @@ from pygame_widgets.button import Button
 from pygame_widgets.toggle import Toggle
 from pygame_widgets.textbox import TextBox
 from pygame_widgets.dropdown import Dropdown
-from quantumgameoflife import functional_cells
+from quantumgameoflife import functional
+from quantumgameoflife import hamiltonian
 from quantumgameoflife import entanglement_cells
 from quantumgameoflife import ColorMode
+from quantumgameoflife import GameMode
 from quantumgameoflife import draw_grid
 
 # RES_X = 1280
@@ -33,26 +35,27 @@ PLAY_TOGGLE_OFFSET_Y = 50
 PLAY_TOGGLE_HEIGHT = 25
 PLAY_TOGGLE_WIDTH = 50
 
-MODE_TOGGLE_OFFSET_X = 50
-MODE_TOGGLE_OFFSET_Y = 50
-MODE_TOGGLE_HEIGHT = 25
-MODE_TOGGLE_WIDTH = 50
-MODE_TOGGLE_RADIUS = 25
-MODE_TOGGLE_X = RES_X - MODE_TOGGLE_OFFSET_X - MODE_TOGGLE_WIDTH
-MODE_TOGGLE_Y = MODE_TOGGLE_OFFSET_Y
-
 STEP_COUNTER_OFFSET_X = 10
 STEP_COUNTER_OFFSET_Y = 10
-STEP_COUNTER_HEIGHT = 50
-STEP_COUNTER_WIDTH = 50
-STEP_COUNTER_RADIUS = 10
+STEP_COUNTER_HEIGHT = 35
+STEP_COUNTER_WIDTH = 75
+STEP_COUNTER_RADIUS = 5
 
-HSV_DROPDOWNS_OFFSET_X = 25
-HSV_DROPDOWNS_OFFSET_Y = 15
-HSV_DROPDOWNS_HEIGHT = 50
-HSV_DROPDOWNS_WIDTH = 100
-HSV_DROPDOWNS_RADIUS = 10
-HSV_DROPDOWNS_X = RES_X - HSV_DROPDOWNS_WIDTH - HSV_DROPDOWNS_OFFSET_X
+MODE_OPTIONS_OFFSET_X = 25
+MODE_OPTIONS_OFFSET_Y = 15
+MODE_OPTIONS_HEIGHT = 50
+MODE_OPTIONS_WIDTH = 100
+MODE_OPTIONS_RADIUS = 10
+MODE_OPTIONS_X = RES_X - MODE_OPTIONS_WIDTH - MODE_OPTIONS_OFFSET_X
+PHASE_TOGGLE_WIDTH = 50
+PHASE_TOGGLE_HEIGHT = 25
+PHASE_TOGGLE_OFFSET_X = 15
+
+EDITOR_OPTIONS_OFFSET_X = 25
+EDITOR_OPTIONS_OFFSET_Y = 25
+EDITOR_OPTIONS_HEIGHT = 30
+EDITOR_OPTIONS_WIDTH = 100
+EDITOR_OPTIONS_X = RES_X - EDITOR_OPTIONS_WIDTH - EDITOR_OPTIONS_OFFSET_X
 
 COLOR_OPTIONS = list(ColorMode)
 
@@ -60,11 +63,21 @@ PAN_SPEED = 10
 ZOOM_SPEED = 0.5
 SCALE_MIN = 1
 SCALE_MAX = 10
-N_CELLS_X = 20
-N_CELLS_Y = 20
+N_CELLS_X = 35
+N_CELLS_Y = 35
 CELL_SIZE = 10
 SPACING = 0.5  # spacing between cells in fraction of full cell size
 SIMULATION_STEP_FRAMES = 60
+
+
+def update_editor_values(
+    grid, qubits, cell_selected, alive_slider, phase1_slider, phase2_slider
+):
+    if qubits:
+        c = grid[cell_selected]
+        alive_slider.setValue(int(np.square(np.abs(c["alive"])) * 100))
+        phase1_slider.setValue(int(np.angle(c["dead"], deg=True) % 360))
+        phase2_slider.setValue(int(np.angle(c["alive"], deg=True) % 360))
 
 
 def main():
@@ -73,29 +86,22 @@ def main():
     clock = pygame.time.Clock()
 
     running = True
-    entanglement_mode = False
+    game_mode = GameMode.FUNCTIONAL
+    qubits = True
     pan = pygame.Vector2()
     scale = 1.0
     step = 0
     step_frames = 0
+    grid_drawn = np.zeros((RES_X, RES_Y), dtype=pygame.Rect)
+    cell_selected = (0, 0)
 
     entangled_lattice = entanglement_cells.Lattice(N_CELLS_X, N_CELLS_Y)
-
-    # TODO: Initialize grid properly
-    grid = functional_cells.make_cell_array(N_CELLS_X, N_CELLS_Y)
-    functional_cells.fixed_initialize(grid, complex(1, 1), complex(-1, 1))
-    # for i, s in np.ndenumerate(grid):
-    #     x, y = i
-    #     x_frac = x / N_CELLS_X + 1e-5
-    #     y_frac = y / N_CELLS_Y + 1e-5
-    #     grid[i]["alive"] = x_frac * np.exp(2j * np.pi * x_frac)
-    #     grid[i]["dead"] = y_frac * np.exp(2j * np.pi * y_frac)
-    functional_cells.normalize_cells(grid)
+    functional_lattice = functional.Lattice(N_CELLS_X, N_CELLS_Y)
+    hamiltonian_lattice = hamiltonian.Lattice(N_CELLS_X, N_CELLS_Y)
 
     def observe():
-        nonlocal grid
-        # TODO: Perform actual observation calculation
-        grid = np.ones((N_CELLS_Y, N_CELLS_X))
+        # TODO: Perform actual observation calculation on the correct lattice object depending on the mode
+        ...
 
     speed_slider = Slider(
         screen,
@@ -123,53 +129,98 @@ def main():
         RES_Y - PLAY_TOGGLE_HEIGHT - PLAY_TOGGLE_OFFSET_Y,
         PLAY_TOGGLE_WIDTH,
         PLAY_TOGGLE_HEIGHT,
-        startOn=True,
+        startOn=False,
     )
-    mode_toggle = Toggle(
+    mode_dropdown = Dropdown(
         screen,
-        MODE_TOGGLE_X,
-        MODE_TOGGLE_Y,
-        MODE_TOGGLE_WIDTH,
-        MODE_TOGGLE_HEIGHT,
-        startOn=entanglement_mode,
+        MODE_OPTIONS_X,
+        MODE_OPTIONS_OFFSET_Y,
+        MODE_OPTIONS_WIDTH,
+        MODE_OPTIONS_HEIGHT,
+        "Game mode",
+        list(GameMode),
     )
     h_dropdown = Dropdown(
         screen,
-        HSV_DROPDOWNS_X,
-        MODE_TOGGLE_Y + MODE_TOGGLE_HEIGHT + HSV_DROPDOWNS_OFFSET_Y,
-        HSV_DROPDOWNS_WIDTH,
-        HSV_DROPDOWNS_HEIGHT,
+        MODE_OPTIONS_X,
+        MODE_OPTIONS_HEIGHT + 2 * MODE_OPTIONS_OFFSET_Y,
+        MODE_OPTIONS_WIDTH,
+        MODE_OPTIONS_HEIGHT,
         "Hue",
         COLOR_OPTIONS,
-        radius=HSV_DROPDOWNS_RADIUS,
+        radius=MODE_OPTIONS_RADIUS,
     )
     s_dropdown = Dropdown(
         screen,
-        HSV_DROPDOWNS_X,
-        MODE_TOGGLE_Y
-        + MODE_TOGGLE_HEIGHT
-        + 2 * HSV_DROPDOWNS_OFFSET_Y
-        + HSV_DROPDOWNS_HEIGHT,
-        HSV_DROPDOWNS_WIDTH,
-        HSV_DROPDOWNS_HEIGHT,
+        MODE_OPTIONS_X,
+        2 * MODE_OPTIONS_HEIGHT + 3 * MODE_OPTIONS_OFFSET_Y,
+        MODE_OPTIONS_WIDTH,
+        MODE_OPTIONS_HEIGHT,
         "Saturation",
         COLOR_OPTIONS,
-        radius=HSV_DROPDOWNS_RADIUS,
+        radius=MODE_OPTIONS_RADIUS,
     )
     v_dropdown = Dropdown(
         screen,
-        HSV_DROPDOWNS_X,
-        MODE_TOGGLE_Y
-        + MODE_TOGGLE_HEIGHT
-        + 3 * HSV_DROPDOWNS_OFFSET_Y
-        + 2 * HSV_DROPDOWNS_HEIGHT,
-        HSV_DROPDOWNS_WIDTH,
-        HSV_DROPDOWNS_HEIGHT,
+        MODE_OPTIONS_X,
+        3 * MODE_OPTIONS_HEIGHT + 4 * MODE_OPTIONS_OFFSET_Y,
+        MODE_OPTIONS_WIDTH,
+        MODE_OPTIONS_HEIGHT,
         "Value",
         COLOR_OPTIONS,
-        radius=HSV_DROPDOWNS_RADIUS,
+        radius=MODE_OPTIONS_RADIUS,
     )
-    # TODO: Make text boxes on either side of the mode toggle to indicate freeform or entanglement mode
+    function_dropdown = Dropdown(
+        screen,
+        MODE_OPTIONS_X,
+        4 * MODE_OPTIONS_HEIGHT + 5 * MODE_OPTIONS_OFFSET_Y,
+        MODE_OPTIONS_WIDTH,
+        MODE_OPTIONS_HEIGHT,
+        "Function",
+        list(functional.Functions),
+        radius=MODE_OPTIONS_RADIUS,
+    )
+    phase_toggle = Toggle(
+        screen,
+        MODE_OPTIONS_X + PHASE_TOGGLE_OFFSET_X,
+        MODE_OPTIONS_HEIGHT + 2 * MODE_OPTIONS_OFFSET_Y,
+        PHASE_TOGGLE_WIDTH,
+        PHASE_TOGGLE_HEIGHT,
+        startOn=False
+    )
+    alive_slider = Slider(
+        screen,
+        EDITOR_OPTIONS_X,
+        RES_Y - 3 * EDITOR_OPTIONS_OFFSET_Y - 3 * EDITOR_OPTIONS_HEIGHT,
+        EDITOR_OPTIONS_WIDTH,
+        EDITOR_OPTIONS_HEIGHT,
+        min=0,
+        max=100,
+        step=1,
+        initial=100,
+    )
+    phase1_slider = Slider(
+        screen,
+        EDITOR_OPTIONS_X,
+        RES_Y - 2 * EDITOR_OPTIONS_OFFSET_Y - 2 * EDITOR_OPTIONS_HEIGHT,
+        EDITOR_OPTIONS_WIDTH,
+        EDITOR_OPTIONS_HEIGHT,
+        min=0,
+        max=359,
+        step=1,
+        initial=0,
+    )
+    phase2_slider = Slider(
+        screen,
+        EDITOR_OPTIONS_X,
+        RES_Y - EDITOR_OPTIONS_OFFSET_Y - EDITOR_OPTIONS_HEIGHT,
+        EDITOR_OPTIONS_WIDTH,
+        EDITOR_OPTIONS_HEIGHT,
+        min=0,
+        max=359,
+        step=1,
+        initial=0,
+    )
     step_counter = TextBox(
         screen,
         STEP_COUNTER_OFFSET_X,
@@ -179,8 +230,20 @@ def main():
         radius=STEP_COUNTER_RADIUS,
     )
     step_counter.disable()
+    # TODO: Make labels
 
     while running:
+        game_mode = mode_dropdown.getSelected()
+        if game_mode == None:
+            game_mode = GameMode.FUNCTIONAL
+        qubits = game_mode == GameMode.FUNCTIONAL or game_mode == GameMode.HAMILTONIAN
+
+        match game_mode:
+            case GameMode.FUNCTIONAL:
+                editable_grid = functional_lattice.grid
+            case GameMode.HAMILTONIAN:
+                editable_grid = hamiltonian_lattice.grid
+
         # poll for events
         # pygame.QUIT event means the user clicked X to close your window
         events = pygame.event.get()
@@ -214,29 +277,74 @@ def main():
                 else:
                     pan += pygame.Vector2(event.x, -event.y) * PAN_SPEED
 
-        entanglement_mode = mode_toggle.getValue()
+            if event.type == pygame.MOUSEBUTTONUP:
+                if event.button == 1:
+                    # Get which cell has been clicked on (if any)
+                    pos = pygame.mouse.get_pos()
+                    clicked = False
+                    for i, r in np.ndenumerate(grid_drawn):
+                        if r.collidepoint(pos):
+                            cell_selected = i
+                            clicked = True
+                    if clicked and qubits:
+                        # Update sliders
+                        update_editor_values(
+                            editable_grid,
+                            qubits,
+                            cell_selected,
+                            alive_slider,
+                            phase1_slider,
+                            phase2_slider,
+                        )
 
         if step_frames > SIMULATION_STEP_FRAMES * (1 - (speed_slider.getValue() / 100)):
             step += 1
-            if entanglement_mode:
-                entangled_lattice.step()
-                ...
-            else:
-                # TODO: Perform grid operations in functional mode
-                ...
             step_frames = 0
+            match game_mode:
+                case GameMode.FUNCTIONAL:
+                    functional_lattice.step()
+                case GameMode.ENTANGLEMENT:
+                    entangled_lattice.step()
+                case GameMode.HAMILTONIAN:
+                    hamiltonian_lattice.step(phase_toggle.getValue())
+
+        functional_lattice.set_function(function_dropdown.getSelected())
 
         # fill the screen with a color to wipe away anything from last frame
         screen.fill("black")
 
-        if entanglement_mode:
-            grid = entangled_lattice.rendering_information
-        else:
-            ...
+        # Set the selected cell's values
+        if qubits:
+            if not play_toggle.getValue():
+                r_alive = np.sqrt(alive_slider.getValue() / 100.0)
+                phase1 = 2j * np.pi * phase1_slider.getValue() / 360
+                phase2 = 2j * np.pi * phase2_slider.getValue() / 360
+                functional.set_cell_value(
+                    editable_grid[cell_selected],
+                    np.sqrt(1 - np.square(r_alive)) * np.exp(phase1),
+                    r_alive * np.exp(phase2),
+                )
+            else:
+                update_editor_values(
+                    editable_grid,
+                    qubits,
+                    cell_selected,
+                    alive_slider,
+                    phase1_slider,
+                    phase2_slider,
+                )
 
-        draw_grid(
+        match game_mode:
+            case GameMode.FUNCTIONAL:
+                grid = functional_lattice.grid
+            case GameMode.ENTANGLEMENT:
+                grid = entangled_lattice.rendering_information
+            case GameMode.HAMILTONIAN:
+                grid = hamiltonian_lattice.grid
+
+        grid_drawn = draw_grid(
             screen,
-            entanglement_mode,
+            game_mode,
             grid,
             pan,
             CELL_SIZE * scale,
@@ -246,11 +354,30 @@ def main():
             v_dropdown.getSelected(),
         )
 
-        for dropdown in [v_dropdown, s_dropdown, h_dropdown]:
-            if entanglement_mode:
-                dropdown.hide()
+        for component in [alive_slider, phase1_slider, phase2_slider]:
+            if qubits:
+                component.show()
             else:
-                dropdown.show()
+                component.hide()
+
+        for component in [
+            function_dropdown,
+            v_dropdown,
+            s_dropdown,
+            h_dropdown,
+        ]:
+            if game_mode == GameMode.FUNCTIONAL:
+                component.show()
+            else:
+                component.hide()
+        
+        for component in [phase_toggle]:
+            if game_mode == GameMode.HAMILTONIAN:
+                component.show()
+            else:
+                component.hide()
+
+        mode_dropdown.show()
 
         step_counter.setText(str(step))
 
