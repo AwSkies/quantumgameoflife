@@ -12,6 +12,7 @@ from quantumgameoflife import entanglement
 from quantumgameoflife import ColorMode
 from quantumgameoflife import GameMode
 from quantumgameoflife import draw_grid
+from quantumgameoflife import qubit
 
 RES_X = 1664
 RES_Y = 936
@@ -139,9 +140,9 @@ def main():
     def clear():
         match game_mode:
             case GameMode.FUNCTIONAL:
-                functional_lattice.grid = np.zeros_like(functional_lattice.grid)
+                qubit.fixed_initialize(functional_lattice.grid, 1, 0)
             case GameMode.HAMILTONIAN:
-                hamiltonian_lattice.grid = np.zeros_like(hamiltonian_lattice.grid)
+                qubit.fixed_initialize(hamiltonian_lattice.grid, 1, 0)
 
     speed_slider = Slider(
         screen,
