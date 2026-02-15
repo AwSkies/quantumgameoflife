@@ -119,8 +119,8 @@ def main():
     hamiltonian_lattice = hamiltonian.Lattice(N_CELLS_X, N_CELLS_Y)
 
     def observe():
-        # TODO: Perform actual observation calculation on the correct lattice object depending on the mode
-        ...
+        if game_mode == GameMode.FUNCTIONAL:
+            functional_lattice.observe()
 
     speed_slider = Slider(
         screen,

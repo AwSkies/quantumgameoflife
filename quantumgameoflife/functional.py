@@ -39,6 +39,13 @@ class Lattice:
         self.grid = new_grid
         normalize_cells(self.grid)
 
+    def observe(self):
+        for i, psi in np.ndenumerate(self.grid):
+            if np.random.random() <= np.abs(np.square(psi["alive"])):
+                set_cell_value(psi, 0, 1)
+            else:
+                set_cell_value(psi, 1, 0)
+
     def addition(self, cell, neighbors: list):
         a_new = np.sum([n["dead"] for n in neighbors])
         b_new = np.sum([n["alive"] for n in neighbors])
