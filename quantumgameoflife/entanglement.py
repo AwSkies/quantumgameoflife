@@ -319,7 +319,7 @@ class Lattice:
         elif configuration_number == 12:
             hw_x, hw_y = HWSS.shape
             corner = (2, 2)
-            print(x, y)
+            # print(x, y)
             binary_array = np.zeros((x, y), dtype=int)
             binary_array[corner[0]:corner[0] + hw_x, corner[1]:corner[1] + hw_y] = HWSS
             grid = self.get_grid_for_single_state(x, y, binary_array=binary_array)
@@ -383,14 +383,14 @@ class Lattice:
         self.remove_0_states()
         magnitudes = np.abs(self.grid)**2
         cell_magnitudes = np.sum(magnitudes, axis=2)
-        print(cell_magnitudes)
+        # print(cell_magnitudes)
 
         # print(cell_magnitudes.shape)
         self.grid = self.grid / cell_magnitudes[:, :, np.newaxis]**0.5
         self.magnitudes = np.abs(self.grid) ** 2
         self.alive_magnitudes = np.sum(self.magnitudes[:, :, 256::], axis=2)
         self.alive_magnitudes = np.nan_to_num(self.alive_magnitudes, nan=0.0)
-        print(self.alive_magnitudes)
+        # print(self.alive_magnitudes)
         # print(np.sum(self.grid[:, :, 256::]))
         self.alive_angles = np.angle(np.sum(self.grid[:, :, 256::], axis=2))
         self.alive_angles = (self.alive_angles * 180 / np.pi) % 360
