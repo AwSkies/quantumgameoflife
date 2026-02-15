@@ -13,9 +13,10 @@ CONFIGURATION_NUMBER = 5
 class Preset(StrEnum):
     BLINKER = "Blinker"
     GLIDER = "Glider"
-    GLIDERS_1 = "Gliders 1"
-    GLIDERS_2 = "Gliders 2"
-    GLIDERS_3 = "Gliders 3"
+    GLIDER_SUPERPOSITION = "Gliders 1"
+    GLIDERS_1 = "Gliders 2"
+    GLIDERS_2 = "Gliders 3"
+    GLIDERS_3 = "Gliders 4"
     RANDOM_GLIDERS = "Random Gliders"
     RANDOM = "Random"
     GRID_1 = "Grid 1"
@@ -263,7 +264,8 @@ class Lattice:
     def remove_0_states(self):
         for x in range(self.grid.shape[0]):
             for y in range(self.grid.shape[1]):
-                if not np.any(self.grid[x, y]):
+                if np.sum(np.abs(self.grid[x,y])**2) < 1e-3:
+                # if not np.any(self.grid[x, y]):
                     self.grid[x, y, 0] = 1
 
     def initialize_grid(self, x, y, configuration_number):
@@ -444,8 +446,8 @@ class Lattice:
         dead_coefficients = coefficient_grid[
             neighbour_pos[0], neighbour_pos[1], neighbour_states_dead
         ]
-        # return np.sum(np.abs(dead_coefficients)**2)**0.5, np.sum(np.abs(alive_coefficients)**2)**0.5
-        return np.sum(dead_coefficients), np.sum(alive_coefficients)
+        return np.sum(np.abs(dead_coefficients)**2)**0.5, np.sum(np.abs(alive_coefficients)**2)**0.5
+        # return np.sum(dead_coefficients), np.sum(alive_coefficients)
 
     def get_coefficients_for_state(self, pos, state_number):
         coefficients = np.zeros((8, 2), dtype=np.complex128)
