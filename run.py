@@ -13,11 +13,8 @@ from quantumgameoflife import ColorMode
 from quantumgameoflife import GameMode
 from quantumgameoflife import draw_grid
 
-# RES_X = 1280
-# RES_Y = 720
-
-RES_X = 1800
-RES_Y = 1000
+RES_X = 1280
+RES_Y = 720
 
 SLIDER_OFFSET = 100
 SLIDER_HEIGHT = 50
