@@ -14,7 +14,7 @@ from quantumgameoflife import GameMode
 from quantumgameoflife import draw_grid
 
 RES_X = 1280
-RES_Y = 720
+RES_Y = 900
 
 SLIDER_OFFSET = 100
 SLIDER_HEIGHT = 50
@@ -85,6 +85,7 @@ def main():
     running = True
     game_mode = GameMode.FUNCTIONAL
     qubits = True
+    entanglement_presets = list(entanglement.Preset)
     pan = pygame.Vector2()
     scale = 1.0
     step = 0
@@ -183,7 +184,33 @@ def main():
         MODE_OPTIONS_HEIGHT + 2 * MODE_OPTIONS_OFFSET_Y,
         PHASE_TOGGLE_WIDTH,
         PHASE_TOGGLE_HEIGHT,
-        startOn=False
+        startOn=False,
+    )
+    preset_dropdown = Dropdown(
+        screen,
+        MODE_OPTIONS_X,
+        MODE_OPTIONS_HEIGHT + 2 * MODE_OPTIONS_OFFSET_Y,
+        MODE_OPTIONS_WIDTH,
+        MODE_OPTIONS_HEIGHT,
+        "Preset",
+        entanglement_presets,
+        radius=MODE_OPTIONS_RADIUS,
+    )
+    preset_button = Button(
+        screen,
+        MODE_OPTIONS_X,
+        2 * MODE_OPTIONS_HEIGHT + 3 * MODE_OPTIONS_OFFSET_Y,
+        MODE_OPTIONS_WIDTH,
+        MODE_OPTIONS_HEIGHT,
+        radius=MODE_OPTIONS_RADIUS,
+        onClick=lambda: entangled_lattice.set_to_preset(
+            entanglement_presets.index(
+                entanglement.Preset(preset_dropdown.getSelected())
+            )
+            if preset_dropdown.getSelected() != None
+            else 0
+        ),
+        text="Set to preset",
     )
     alive_slider = Slider(
         screen,
@@ -367,9 +394,15 @@ def main():
                 component.show()
             else:
                 component.hide()
-        
+
         for component in [phase_toggle]:
             if game_mode == GameMode.HAMILTONIAN:
+                component.show()
+            else:
+                component.hide()
+
+        for component in [preset_button, preset_dropdown]:
+            if game_mode == GameMode.ENTANGLEMENT:
                 component.show()
             else:
                 component.hide()
