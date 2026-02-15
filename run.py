@@ -517,6 +517,7 @@ def main():
         )
 
         for component in [
+            clear_button,
             alive_slider,
             phase1_slider,
             phase2_slider,
