@@ -1,8 +1,13 @@
-import numpy as np
+import random
+from quantumgameoflife.shapes import *
 
+import numpy as np
+import pickle
+RENDER_PHASE = True
+CONFIGURATION_NUMBER = 11
 
 class Lattice:
-    def __init__(self, x : int, y : int):
+    def __init__(self, x : int, y : int, configuration_number=CONFIGURATION_NUMBER, render_phase=RENDER_PHASE):
         self.x = x
         self.y = y
         self.dims = np.array([x, y])
@@ -16,13 +21,16 @@ class Lattice:
         self.steps_done = 0
 
         #grid in ford [x, y, an], with a coefficient of nth state
-        self.initialize_grid(x, y, 0)
+        self.initialize_grid(x, y, configuration_number)
         self.alive_magnitudes = np.zeros((x, y))
         self.magnitudes = np.zeros((x, y))
+        self.rendering_information = np.zeros((x, y), np.dtype([("mag", float), ("sat", float), ("angle", float)]))
+        if render_phase:
+            self.rendering_information["sat"] = 100
 
         self.normalize_grid_and_update_magnitudes()
-        print(self.grid[:, :, 0])
-        print(self.alive_magnitudes)
+        # print(self.grid[:, :, 0])
+        # print(self.alive_magnitudes)
 
         #self.states_alive[neighbour_number, state_group_number] = [list of state indices in neighbour]
         #self.states_dead[neighbour_number, state_group_number]
@@ -56,45 +64,60 @@ class Lattice:
         self.common_indices_neighbour = [self.common_indices_neighbour[i] for i in new_neighbour_ordering]
         self.common_indices_1 = [self.common_indices_1[i] for i in new_neighbour_ordering]
 
-        print(self.common_indices_1[3])
-        print(self.common_indices_neighbour[3])
+        try:
+            with open('stored_state_information.pkl', 'rb') as f:
+                stored_values = pickle.load(f)
+            self.state_group_number = stored_values['state_group_number']
+            self.states_alive = stored_values['states_alive']
+            self.states_dead = stored_values['states_dead']
 
-        self.state_group_number = np.zeros((8, 512), dtype=int)
+        except:
+            self.state_group_number = np.zeros((8, 512), dtype=int)
 
-        self.states_alive = []
-        self.states_dead = []
+            self.states_alive = []
+            self.states_dead = []
 
-        for neighbour_number in range(8):
-            self.states_alive.append([])
-            self.states_dead.append([])
-            common_indices_1 = self.common_indices_1[neighbour_number]
-            common_indices_neighbour = self.common_indices_neighbour[neighbour_number]
 
-            r_1, c_1 = zip(*common_indices_1)
-            r_neighbour, c_neighbour = zip(*common_indices_neighbour)
 
-            # state_1 = np.zeros((3, 3), dtype=bool)
-            # state_neighbour = np.zeros((3, 3), dtype=bool)
+            for neighbour_number in range(8):
+                self.states_alive.append([])
+                self.states_dead.append([])
+                common_indices_1 = self.common_indices_1[neighbour_number]
+                common_indices_neighbour = self.common_indices_neighbour[neighbour_number]
 
-            n_common_indices = len(common_indices_1)
-            for state_group_number in range(2**n_common_indices):
-                self.states_alive[-1].append([])
-                self.states_dead[-1].append([])
-                b_array = nth_binary_array(state_group_number, n_common_indices)
-                # state_1[common_indices_1] = b_array
-                # state_neighbour[common_indices_neighbour] = b_array
+                r_1, c_1 = zip(*common_indices_1)
+                r_neighbour, c_neighbour = zip(*common_indices_neighbour)
 
-                for i in range(512):
-                    state = self.states[i]
-                    if np.all(state[r_1, c_1] == b_array):
-                        self.state_group_number[neighbour_number, i] = state_group_number
-                for j in range(512):
-                    state_j = self.states[j]
-                    if np.all(state_j[r_neighbour, c_neighbour] == b_array):
-                        if self.next_center_states[j]:
-                            self.states_alive[-1][-1].append(j)
-                        else:
-                            self.states_dead[-1][-1].append(j)
+                # state_1 = np.zeros((3, 3), dtype=bool)
+                # state_neighbour = np.zeros((3, 3), dtype=bool)
+
+                n_common_indices = len(common_indices_1)
+                for state_group_number in range(2**n_common_indices):
+                    self.states_alive[-1].append([])
+                    self.states_dead[-1].append([])
+                    b_array = nth_binary_array(state_group_number, n_common_indices)
+                    # state_1[common_indices_1] = b_array
+                    # state_neighbour[common_indices_neighbour] = b_array
+
+                    for i in range(512):
+                        state = self.states[i]
+                        if np.all(state[r_1, c_1] == b_array):
+                            self.state_group_number[neighbour_number, i] = state_group_number
+                    for j in range(512):
+                        state_j = self.states[j]
+                        if np.all(state_j[r_neighbour, c_neighbour] == b_array):
+                            if self.next_center_states[j]:
+                                self.states_alive[-1][-1].append(j)
+                            else:
+                                self.states_dead[-1][-1].append(j)
+
+            state_information = {
+                'state_group_number': self.state_group_number,
+                'states_alive': self.states_alive,
+                'states_dead': self.states_dead,
+            }
+            with open('stored_state_information.pkl', 'wb') as f:
+                pickle.dump(state_information, f)
 
         # print(self.states[self.states_alive[3][self.state_group_number[3, 41]]][1])
         # print(self.states[41])
@@ -102,7 +125,7 @@ class Lattice:
         # print(self.states_alive[0][self.state_group_number[0, 0]])
         #
 
-        print(self.states[1])
+        # print(self.states[1])
 
         # self.test()
         # 1/0
@@ -141,13 +164,13 @@ class Lattice:
         new_coefficients = np.concatenate([new_coefficient_sets_dead, new_coefficient_sets_alive])
 
         st = np.where(new_coefficients)
-        print(st)
-        print(self.states[st[0]])
+        # print(st)
+        # print(self.states[st[0]])
 
     def run(self):
         while 1:
             self.step()
-            print(self.alive_magnitudes)
+            # print(self.alive_magnitudes)
 
     def step(self):
         self.update_cells()
@@ -187,18 +210,137 @@ class Lattice:
 
     def initialize_grid(self, x, y, configuration_number):
 
+        # configuration_number = 8
+
         if configuration_number == 0: #blinker
             indices = [(2,1), (2, 2), (2, 3)]
             self.grid = self.get_grid_for_single_state(x, y, indices)
+        elif configuration_number == 1:  # glider
+            indices = np.array([(3,1), (3, 2), (3, 3), (2, 3), (1, 2)])
+            self.grid = self.get_grid_for_single_state(x, y, indices)
+        elif configuration_number == 2: #2 glider, superposition
+            indices1 = np.array([(3,1), (3, 2), (3, 3), (2, 3), (1, 2)])
+            indices2 = (indices1 + np.array([4, 4])) % np.array([x, y])
+            grid1 = self.get_grid_for_single_state(x, y, indices1)
+            grid2 = self.get_grid_for_single_state(x, y, indices2)
+            self.grid = grid1 + grid2
+        elif configuration_number == 3: #2 gliders, interfering superposition
+            indices1 = np.array([(3,1), (3, 2), (3, 3), (2, 3), (1, 2)])
+            indices2 = np.array([(3,1), (3, 2), (3, 3), (4, 1), (5, 2)])
+            indices2 = (indices2 + np.array([6, 4])) % np.array([x, y])
+            grid1 = self.get_grid_for_single_state(x, y, indices1)
+            phase = np.pi*0.5
+            grid2 = np.exp(phase * 1j)*self.get_grid_for_single_state(x, y, indices2)
+            self.grid = grid2 + grid1
+
+        elif configuration_number == 4: #superposition of random gliders
+            indices1 = np.array([(3, 1), (3, 2), (3, 3), (2, 3), (1, 2)])
+            indices2 = np.array([(3, 1), (3, 2), (3, 3), (4, 1), (5, 2)])
+            indices3 = np.array([(3, 1), (3, 2), (3, 3), (2, 1), (1, 2)])
+            indices4 = np.array([(3, 1), (3, 2), (3, 3), (4, 3), (5, 2)])
+
+            indices_sets = [indices1, indices2, indices3, indices4]
+
+            grid = np.zeros((x, y, 512), dtype=np.complex128)
+
+            for i in range(7):
+                indices = random.choice(indices_sets)
+                indices = (indices + np.array([random.randint(0, x), random.randint(0, y)])) % np.array([x, y])
+                phase = random.uniform(0, 2 * np.pi)
+                # phase = np.pi/2
+                grid += self.get_grid_for_single_state(x, y, indices) * np.exp(1j * phase)
+
+            self.grid = grid
+
+        elif configuration_number == 5: #superposition of random gliders
+            grid = np.zeros((x, y, 512), dtype=np.complex128)
+            grid += 2**(1 + np.random.rand(x, y, 512)*5)
+            # grid = np.random.rand(x, y, 512) + np.random.rand(x, y, 512)*1j
+            self.grid = grid
+
+        elif configuration_number == 6: #block and glider
+            grid = np.zeros((x, y, 512), dtype=np.complex128)
+            indices1 = np.array([(3, 1), (3, 2), (3, 3), (2, 3), (1, 2)])
+            block_indices = np.array([[6, 6], [6, 7], [7, 6], [7, 7]]) + 5
+            grid += 1j* self.get_grid_for_single_state(x, y, indices1)
+            grid +=  self.get_grid_for_single_state(x, y, block_indices)
+            self.grid = grid
+
+        elif configuration_number == 7: #pulsar
+            pulsar = PULSAR
+            pulsar_x, pulsar_y = pulsar.shape
+
+            corner = (2, 2)
+            binary_array = np.zeros((x, y), dtype=int)
+            # binary_array[corner[0]:corner[0]+pulsar_x, corner[1]+pulsar_y] = 1
+            binary_array[corner[0]:corner[0]+pulsar_x, corner[1]:corner[1]+pulsar_y] = pulsar
+            grid = self.get_grid_for_single_state(x, y, binary_array=binary_array)
+            self.grid = grid
+
+        elif configuration_number == 8: #pulsar block superposition
+
+            pulsar_x, pulsar_y = PULSAR.shape
+
+            corner = (2, 2)
+            binary_array = np.zeros((x, y), dtype=int)
+            # binary_array[corner[0]:corner[0]+pulsar_x, corner[1]+pulsar_y] = 1
+            binary_array[corner[0]:corner[0] + pulsar_x, corner[1]:corner[1] + pulsar_y] = PULSAR
+            grid = self.get_grid_for_single_state(x, y, binary_array=binary_array)
+
+            # block_indices = np.array([[6, 6], [6, 7], [7, 6], [7, 7]]) + 5
+            # grid_block = self.get_grid_for_single_state(x, y, block_indices)
+            #
+            # self.grid = grid + (0.3 + 0.1j)* grid_block
+
+            grid_2 = np.roll(grid, (4, 4))
+            self.grid = grid + 1j*grid_2
+
+        elif configuration_number == 9:
+            hw_x, hw_y = HWSS.shape
+            corner = (2, 2)
+            binary_array = np.zeros((x, y), dtype=int)
+            binary_array[corner[0]:corner[0] + hw_x, corner[1]:corner[1] + hw_y] = HWSS
+            grid = self.get_grid_for_single_state(x, y, binary_array=binary_array)
+
+            binary_array_2 = np.roll(binary_array[::-1, :], (-5, 5))
+            grid2 = self.get_grid_for_single_state(x, y, binary_array=binary_array_2)
+
+            self.grid = grid + np.exp((np.pi/2) *1j) * grid2
+
+        elif configuration_number == 10:
+            grid = np.zeros((x, y, 512), dtype=np.complex128)
+            grid += np.random.rand(x, y, 512)*1j
+            grid += np.random.rand(x, y, 512)
+            self.grid = grid
+
+        elif configuration_number == 11:
+            hw_x, hw_y = HWSS.shape
+            corner = (2, 2)
+            print(x, y)
+            binary_array = np.zeros((x, y), dtype=int)
+            binary_array[corner[0]:corner[0] + hw_x, corner[1]:corner[1] + hw_y] = HWSS
+            grid = self.get_grid_for_single_state(x, y, binary_array=binary_array)
+
+            binary_array_2 = np.roll(binary_array[::-1, :], (-5, 5))
+            grid2 = self.get_grid_for_single_state(x, y, binary_array=binary_array_2)
+
+            self.grid = grid + np.exp(0.1*1j) * grid2
+
         else:
             raise(NotImplementedError)
 
-    def get_grid_for_single_state(self, x, y, indices):
-        binary_grid = np.zeros((x, y))
-        for index in indices:
-            binary_grid[index[0], index[1]] = 1
-        grid = np.zeros((x, y, 512), dtype=np.complex128)
 
+
+    def get_grid_for_single_state(self, x, y, indices=None, binary_array=None):
+
+        if np.any(indices):
+            binary_grid = np.zeros((x, y))
+            for index in indices:
+                binary_grid[index[0], index[1]] = 1
+        else:
+            binary_grid = binary_array
+
+        grid = np.zeros((x, y, 512), dtype=np.complex128)
         for i in range(x):
             for j in range(y):
                 rows = [(i - 1) % x, i % x, (i + 1) % x]
@@ -219,6 +361,7 @@ class Lattice:
         neighbour_pos = self.add_pos(pos, self.neighbour_offsets[neighbour_number])
         alive_coefficients = coefficient_grid[neighbour_pos[0], neighbour_pos[1], neighbour_states_alive]
         dead_coefficients = coefficient_grid[neighbour_pos[0], neighbour_pos[1], neighbour_states_dead]
+        # return np.sum(np.abs(dead_coefficients)**2)**0.5, np.sum(np.abs(alive_coefficients)**2)**0.5
         return np.sum(dead_coefficients), np.sum(alive_coefficients)
 
     def get_coefficients_for_state(self, pos, state_number):
@@ -235,6 +378,13 @@ class Lattice:
         self.grid = self.grid / cell_magnitudes[:, :, np.newaxis]**0.5
         self.magnitudes = np.abs(self.grid) ** 2
         self.alive_magnitudes = np.sum(self.magnitudes[:, :, 256::], axis=2)
+        # print(np.sum(self.grid[:, :, 256::]))
+        self.alive_angles = np.angle(np.sum(self.grid[:, :, 256::], axis=2))
+        self.alive_angles = (self.alive_angles * 180 / np.pi) % 360
+        self.rendering_information["mag"] = self.alive_magnitudes
+        self.rendering_information["angle"] = self.alive_angles
+
+        # print(self.alive_angles)
 
     def get_state_numbers(self):
         return np.arange(0, 512)
@@ -313,8 +463,10 @@ def next_center_state(grid):
     if center:
         # Alive cell survives with 2 or 3 neighbors
         return live_neighbors in (2, 3)
+        # return live_neighbors in (1, 2, 3, 4, 5, 6)
     else:
         # Dead cell becomes alive with exactly 3 neighbors
+        # return live_neighbors in (2, 3, 4, 5)
         return live_neighbors == 3
 
 

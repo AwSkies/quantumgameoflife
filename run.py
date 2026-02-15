@@ -11,8 +11,11 @@ from quantumgameoflife import entanglement_cells
 from quantumgameoflife import ColorMode
 from quantumgameoflife import draw_grid
 
-RES_X = 1280
-RES_Y = 720
+# RES_X = 1280
+# RES_Y = 720
+
+RES_X = 1800
+RES_Y = 1000
 
 SLIDER_OFFSET = 100
 SLIDER_HEIGHT = 50
@@ -57,7 +60,7 @@ PAN_SPEED = 10
 ZOOM_SPEED = 0.5
 SCALE_MIN = 1
 SCALE_MAX = 10
-N_CELLS_X = 10
+N_CELLS_X = 20
 N_CELLS_Y = 20
 CELL_SIZE = 10
 SPACING = 0.5  # spacing between cells in fraction of full cell size
@@ -227,7 +230,7 @@ def main():
         screen.fill("black")
 
         if entanglement_mode:
-            grid = entangled_lattice.alive_magnitudes
+            grid = entangled_lattice.rendering_information
         else:
             ...
 

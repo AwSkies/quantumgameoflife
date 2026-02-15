@@ -9,7 +9,9 @@ COLOR_ALPHA = 1.0
 def color_entangled(cell):
     # TODO: Write function for calculating color in entangled mode
     color = pygame.Color(0, 0, 0)
-    color.hsva = (0, 0, cell * 100, COLOR_ALPHA)
+    # print(angle*180/np.pi, 0, int(mag * 100), COLOR_ALPHA)
+    # print((cell["angle"], 0, int(cell["mag"] * 100), COLOR_ALPHA))
+    color.hsva = (cell["angle"], cell["sat"], int(cell["mag"] * 100), COLOR_ALPHA)
     return color
 
 
