@@ -13,8 +13,10 @@ from quantumgameoflife import ColorMode
 from quantumgameoflife import GameMode
 from quantumgameoflife import draw_grid
 
-RES_X = 1280
-RES_Y = 900
+RES_X = 1664
+RES_Y = 936
+
+SLIDER_HANDLE_COLOR = (66, 135, 245)
 
 SLIDER_OFFSET = 100
 SLIDER_HEIGHT = 50
@@ -52,7 +54,18 @@ EDITOR_OPTIONS_OFFSET_X = 25
 EDITOR_OPTIONS_OFFSET_Y = 25
 EDITOR_OPTIONS_HEIGHT = 30
 EDITOR_OPTIONS_WIDTH = 100
-EDITOR_OPTIONS_X = RES_X - EDITOR_OPTIONS_WIDTH - EDITOR_OPTIONS_OFFSET_X
+EDITOR_RIGHT_CAPTION_WIDTH = 50
+EDITOR_LEFT_CAPTION_WIDTH = 50
+EDITOR_LABEL_WIDTH = 80
+EDITOR_CAPTION_HEIGHT = 35
+EDITOR_RIGHT_CAPTION_X = RES_X - EDITOR_OPTIONS_OFFSET_X - EDITOR_RIGHT_CAPTION_WIDTH
+EDITOR_OPTIONS_X = (
+    EDITOR_RIGHT_CAPTION_X - EDITOR_OPTIONS_WIDTH - EDITOR_OPTIONS_OFFSET_X
+)
+EDITOR_LEFT_CAPTION_X = (
+    EDITOR_OPTIONS_X - EDITOR_LEFT_CAPTION_WIDTH - EDITOR_OPTIONS_OFFSET_X
+)
+EDITOR_LABEL_X = EDITOR_LEFT_CAPTION_X - EDITOR_LABEL_WIDTH - EDITOR_OPTIONS_OFFSET_X
 
 COLOR_OPTIONS = list(ColorMode)
 
@@ -86,8 +99,16 @@ def main():
     game_mode = GameMode.FUNCTIONAL
     qubits = True
     entanglement_presets = list(entanglement.Preset)
-    pan = pygame.Vector2()
     scale = 1.0
+
+    # Initialize pan such that the grid is centered
+    STEP = CELL_SIZE * (1 + SPACING)
+    grid_width = (N_CELLS_X - 1) * STEP + CELL_SIZE
+    grid_height = (N_CELLS_Y - 1) * STEP + CELL_SIZE
+    world_center = pygame.Vector2(grid_width / 2, grid_height / 2)
+    screen_center = pygame.Vector2(RES_X // 2, RES_Y // 2)
+    pan = screen_center - world_center * scale
+
     step = 0
     step_frames = 0
     grid_drawn = np.zeros((RES_X, RES_Y), dtype=pygame.Rect)
@@ -110,6 +131,8 @@ def main():
         min=0,
         max=100,
         step=1,
+        initial=0,
+        handleColour=SLIDER_HANDLE_COLOR,
     )
     observe_button = Button(
         screen,
@@ -212,39 +235,117 @@ def main():
         ),
         text="Set to preset",
     )
+    ALIVE_Y = RES_Y - 3 * EDITOR_OPTIONS_OFFSET_Y - 3 * EDITOR_OPTIONS_HEIGHT
     alive_slider = Slider(
         screen,
         EDITOR_OPTIONS_X,
-        RES_Y - 3 * EDITOR_OPTIONS_OFFSET_Y - 3 * EDITOR_OPTIONS_HEIGHT,
+        ALIVE_Y,
         EDITOR_OPTIONS_WIDTH,
         EDITOR_OPTIONS_HEIGHT,
         min=0,
         max=100,
         step=1,
         initial=100,
+        handleColour=SLIDER_HANDLE_COLOR,
     )
+    alive_right_caption = TextBox(
+        screen,
+        EDITOR_RIGHT_CAPTION_X,
+        ALIVE_Y,
+        EDITOR_RIGHT_CAPTION_WIDTH,
+        EDITOR_CAPTION_HEIGHT,
+    )
+    alive_right_caption.setText("1")
+    alive_left_caption = TextBox(
+        screen,
+        EDITOR_LEFT_CAPTION_X,
+        ALIVE_Y,
+        EDITOR_LEFT_CAPTION_WIDTH,
+        EDITOR_CAPTION_HEIGHT,
+    )
+    alive_left_caption.setText("0")
+    alive_label = TextBox(
+        screen,
+        EDITOR_LABEL_X,
+        ALIVE_Y,
+        EDITOR_LABEL_WIDTH,
+        EDITOR_CAPTION_HEIGHT,
+    )
+    alive_label.setText("|b|:")
+    PHASE1_Y = RES_Y - 2 * EDITOR_OPTIONS_OFFSET_Y - 2 * EDITOR_OPTIONS_HEIGHT
     phase1_slider = Slider(
         screen,
         EDITOR_OPTIONS_X,
-        RES_Y - 2 * EDITOR_OPTIONS_OFFSET_Y - 2 * EDITOR_OPTIONS_HEIGHT,
+        PHASE1_Y,
         EDITOR_OPTIONS_WIDTH,
         EDITOR_OPTIONS_HEIGHT,
         min=0,
         max=359,
         step=1,
         initial=0,
+        handleColour=SLIDER_HANDLE_COLOR,
     )
+    phase1_right_caption = TextBox(
+        screen,
+        EDITOR_RIGHT_CAPTION_X,
+        PHASE1_Y,
+        EDITOR_RIGHT_CAPTION_WIDTH,
+        EDITOR_CAPTION_HEIGHT,
+    )
+    phase1_right_caption.setText("360")
+    phase1_left_caption = TextBox(
+        screen,
+        EDITOR_LEFT_CAPTION_X,
+        PHASE1_Y,
+        EDITOR_LEFT_CAPTION_WIDTH,
+        EDITOR_CAPTION_HEIGHT,
+    )
+    phase1_left_caption.setText("0")
+    phase1_label = TextBox(
+        screen,
+        EDITOR_LABEL_X,
+        PHASE1_Y,
+        EDITOR_LABEL_WIDTH,
+        EDITOR_CAPTION_HEIGHT,
+    )
+    phase1_label.setText("arg(a):")
+    PHASE2_Y = RES_Y - EDITOR_OPTIONS_OFFSET_Y - EDITOR_OPTIONS_HEIGHT
     phase2_slider = Slider(
         screen,
         EDITOR_OPTIONS_X,
-        RES_Y - EDITOR_OPTIONS_OFFSET_Y - EDITOR_OPTIONS_HEIGHT,
+        PHASE2_Y,
         EDITOR_OPTIONS_WIDTH,
         EDITOR_OPTIONS_HEIGHT,
         min=0,
         max=359,
         step=1,
         initial=0,
+        handleColour=SLIDER_HANDLE_COLOR,
     )
+    phase2_right_caption = TextBox(
+        screen,
+        EDITOR_RIGHT_CAPTION_X,
+        PHASE2_Y,
+        EDITOR_RIGHT_CAPTION_WIDTH,
+        EDITOR_CAPTION_HEIGHT,
+    )
+    phase2_right_caption.setText("360")
+    phase2_left_caption = TextBox(
+        screen,
+        EDITOR_LEFT_CAPTION_X,
+        PHASE2_Y,
+        EDITOR_LEFT_CAPTION_WIDTH,
+        EDITOR_CAPTION_HEIGHT,
+    )
+    phase2_left_caption.setText("0")
+    phase2_label = TextBox(
+        screen,
+        EDITOR_LABEL_X,
+        PHASE2_Y,
+        EDITOR_LABEL_WIDTH,
+        EDITOR_CAPTION_HEIGHT,
+    )
+    phase2_label.setText("arg(b):")
     step_counter = TextBox(
         screen,
         STEP_COUNTER_OFFSET_X,
@@ -253,7 +354,19 @@ def main():
         STEP_COUNTER_HEIGHT,
         radius=STEP_COUNTER_RADIUS,
     )
-    step_counter.disable()
+    for text_box in [
+        step_counter,
+        alive_left_caption,
+        alive_right_caption,
+        alive_label,
+        phase1_left_caption,
+        phase1_right_caption,
+        phase1_label,
+        phase2_left_caption,
+        phase2_right_caption,
+        phase2_label,
+    ]:
+        text_box.disable()
     # TODO: Make labels
 
     while running:
