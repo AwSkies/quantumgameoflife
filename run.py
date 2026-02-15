@@ -64,6 +64,16 @@ SPACING = 0.5  # spacing between cells in fraction of full cell size
 SIMULATION_STEP_FRAMES = 60
 
 
+def update_editor_values(
+    grid, entanglement_mode, cell_selected, alive_slider, phase1_slider, phase2_slider
+):
+    if not entanglement_mode:
+        c = grid[cell_selected]
+        alive_slider.setValue(int(np.square(np.abs(c["alive"])) * 100))
+        phase1_slider.setValue(int(np.angle(c["dead"], deg=True)))
+        phase2_slider.setValue(int(np.angle(c["alive"], deg=True)))
+
+
 def main():
     pygame.init()
     screen = pygame.display.set_mode((RES_X, RES_Y))
@@ -77,6 +87,10 @@ def main():
     step_frames = 0
     grid_drawn = np.zeros((RES_X, RES_Y), dtype=pygame.Rect)
     cell_selected = (0, 0)
+
+    prev_alive_slider = 100
+    prev_phase1_slider = 0
+    prev_phase2_slider = 0
 
     entangled_lattice = entanglement_cells.Lattice(N_CELLS_X, N_CELLS_Y)
     functional_lattice = functional_cells.Lattice(N_CELLS_X, N_CELLS_Y)
@@ -182,6 +196,7 @@ def main():
         min=0,
         max=100,
         step=1,
+        initial=100,
     )
     phase1_slider = Slider(
         screen,
@@ -195,6 +210,7 @@ def main():
         min=0,
         max=359,
         step=1,
+        initial=0,
     )
     phase2_slider = Slider(
         screen,
@@ -208,6 +224,7 @@ def main():
         min=0,
         max=359,
         step=1,
+        initial=0,
     )
     # TODO: Make text boxes on either side of the mode toggle to indicate freeform or entanglement mode
     step_counter = TextBox(
@@ -265,11 +282,14 @@ def main():
                             clicked = True
                     if clicked:
                         # Update sliders
-                        if not entanglement_mode:
-                            c = functional_lattice.grid[cell_selected]
-                            alive_slider.setValue(int(np.square(np.abs(c["alive"])) * 100))
-                            phase1_slider.setValue(int(np.angle(c["dead"], deg=True)))
-                            phase2_slider.setValue(int(np.angle(c["alive"], deg=True)))
+                        update_editor_values(
+                            functional_lattice.grid,
+                            entanglement_mode,
+                            cell_selected,
+                            alive_slider,
+                            phase1_slider,
+                            phase2_slider,
+                        )
 
         entanglement_mode = mode_toggle.getValue()
 
@@ -287,16 +307,25 @@ def main():
         screen.fill("black")
 
         # Set the selected cell's values
-
         if not entanglement_mode:
-            r_alive = np.sqrt(alive_slider.getValue() / 100.0)
-            phase1 = 2j * np.pi * phase1_slider.getValue() / 360
-            phase2 = 2j * np.pi * phase2_slider.getValue() / 360
-            functional_cells.set_cell_value(
-                functional_lattice.grid[cell_selected],
-                np.sqrt(1 - np.square(r_alive)) * np.exp(phase1),
-                r_alive * np.exp(phase2),
-            )
+            if not play_toggle.getValue():
+                r_alive = np.sqrt(alive_slider.getValue() / 100.0)
+                phase1 = 2j * np.pi * phase1_slider.getValue() / 360
+                phase2 = 2j * np.pi * phase2_slider.getValue() / 360
+                functional_cells.set_cell_value(
+                    functional_lattice.grid[cell_selected],
+                    np.sqrt(1 - np.square(r_alive)) * np.exp(phase1),
+                    r_alive * np.exp(phase2),
+                )
+            else:
+                update_editor_values(
+                    functional_lattice.grid,
+                    entanglement_mode,
+                    cell_selected,
+                    alive_slider,
+                    phase1_slider,
+                    phase2_slider,
+                )
 
         if entanglement_mode:
             grid = entangled_lattice.alive_magnitudes
