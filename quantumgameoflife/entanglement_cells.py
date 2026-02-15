@@ -130,6 +130,10 @@ class Lattice:
         # self.test()
         # 1/0
 
+    def set_to_preset(self, configuration_number):
+        self.initialize_grid(self.x, self.y, configuration_number)
+        self.normalize_grid_and_update_magnitudes()
+
     def test(self):
         current_coefficients = np.ones(512)
         state_numbers = np.array([4])
