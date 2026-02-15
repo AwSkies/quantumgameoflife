@@ -2,12 +2,18 @@ import numpy as np
 from enum import StrEnum
 from .qubit import *
 
+DELTA_THETA = 0.05
+
+
 class Functions(StrEnum):
     ADDITION = "Addition"
     MULTIPLICATION = "Multiplication"
     PHASE_MOD_ADDITION = "θ, r Addition"
+    GAUSSIAN_CONWAY = "Gaussian Conway"
+    PHASE_FRIENDLY_GAUSSIAN_CONWAY = "Phase Friendly"
     CONWAY = "Conway"
-    BOTCHED_CONWAY = "Botched conway"
+    BOTCHED_CONWAY = "Botched Conway"
+
 
 class Lattice:
 
@@ -29,6 +35,10 @@ class Lattice:
                 f = self.multiplication
             case Functions.PHASE_MOD_ADDITION:
                 f = self.phase_modulus_addition
+            case Functions.GAUSSIAN_CONWAY:
+                f = self.gaussian_conway
+            case Functions.PHASE_FRIENDLY_GAUSSIAN_CONWAY:
+                f = self.phase_friendly_gaussian_conway
             case Functions.CONWAY:
                 f = self.conway
             case Functions.BOTCHED_CONWAY:
@@ -61,9 +71,33 @@ class Lattice:
 
     def phase_modulus_addition(self, cell, neighbors: list):
         N = len(neighbors)
-        a_new = np.sum([np.abs(n["dead"]) for n in neighbors]) / N * np.exp(1j * np.sum([np.angle(n["dead"]) for n in neighbors]))
-        b_new = np.sum([np.abs(n["alive"]) for n in neighbors]) / N * np.exp(1j * np.sum([np.angle(n["alive"]) for n in neighbors]))
+        a_new = (
+            np.sum([np.abs(n["dead"]) for n in neighbors])
+            / N
+            * np.exp(1j * np.sum([np.angle(n["dead"]) for n in neighbors]))
+        )
+        b_new = (
+            np.sum([np.abs(n["alive"]) for n in neighbors])
+            / N
+            * np.exp(1j * np.sum([np.angle(n["alive"]) for n in neighbors]))
+        )
         set_cell_value(cell, a_new, b_new)
+
+    def gaussian_conway(self, cell, neighbors: list):
+        N = np.abs(np.sum([n["alive"] for n in neighbors]))
+        b_mod = np.exp(-np.square(N - 2.5) / 0.5)
+        a_mod = np.sqrt(1 - np.square(b_mod))
+        a_phase = np.sum([np.angle(n["dead"]) for n in neighbors])
+        b_phase = np.sum([np.angle(n["alive"]) for n in neighbors])
+        set_cell_value(cell, a_mod * np.exp(1j * a_phase), b_mod * np.exp(1j * b_phase))
+
+    def phase_friendly_gaussian_conway(self, cell, neighbors: list):
+        N = np.abs(np.sum([n["alive"] for n in neighbors]))
+        b_mod = np.exp(-np.square(N - 1.5) / 0.15)
+        a_mod = np.sqrt(1 - np.square(b_mod))
+        a_phase = np.sum([np.angle(n["dead"]) for n in neighbors])
+        b_phase = np.sum([np.angle(n["alive"]) for n in neighbors])
+        set_cell_value(cell, a_mod * np.exp(1j * a_phase), b_mod * np.exp(1j * b_phase))
 
     def conway(self, cell, neighbors: list):
         sum = np.sum([np.square(np.abs(n["alive"])) for n in neighbors])
