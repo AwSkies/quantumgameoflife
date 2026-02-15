@@ -174,6 +174,9 @@ def main():
         PLAY_TOGGLE_HEIGHT,
         startOn=False,
     )
+
+    image = pygame.image.load('shaq-timeout.png').convert_alpha()
+
     mode_dropdown = Dropdown(
         screen,
         MODE_OPTIONS_X,
@@ -391,6 +394,7 @@ def main():
         STEP_COUNTER_HEIGHT,
         radius=STEP_COUNTER_RADIUS,
     )
+
     for text_box in [
         step_counter,
         alive_left_caption,
@@ -404,6 +408,7 @@ def main():
         phase2_label,
     ]:
         text_box.disable()
+
     # TODO: Make labels
 
     while running:
@@ -420,6 +425,8 @@ def main():
 
         # poll for events
         # pygame.QUIT event means the user clicked X to close your window
+        screen.blit(image, (100, 100)) #blit
+        pygame.display.update()
         events = pygame.event.get()
         for event in events:
             if event.type == pygame.QUIT:
