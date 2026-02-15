@@ -2,9 +2,8 @@ import numpy as np
 import pygame
 
 from .display_type import ColorMode
-
+LIFE_THRESHOLD = 0.5
 COLOR_ALPHA = 1.0
-
 
 def color_entangled(cell):
     # TODO: Write function for calculating color in entangled mode
@@ -38,6 +37,8 @@ def color_unentangled(cell, color_mode_h, color_mode_s, color_mode_v):
             color_h = int(np.angle(cell["alive"] / cell["dead"], deg=True) % 360)
         case ColorMode.DELTA_PHASE_AB:
             color_h = int(np.angle(cell["dead"] / cell["alive"], deg=True) % 360)
+        case ColorMode.live_death:
+            color_h = int(np.angle(cell["alive"], deg=True) % 360)
         case ColorMode.CONST:
             color_h = 0
         case _:
@@ -61,6 +62,8 @@ def color_unentangled(cell, color_mode_h, color_mode_s, color_mode_v):
                 (100.0 / 360.0)
                 * (np.angle(cell["dead"] / cell["alive"], deg=True) % 360)
             )
+        case ColorMode.live_death:
+            color_s = int(100 * np.abs(cell["alive"]))
         case ColorMode.CONST:
             color_s = 100
         case _:
@@ -84,6 +87,11 @@ def color_unentangled(cell, color_mode_h, color_mode_s, color_mode_v):
                 (100.0 / 360.0)
                 * (np.angle(cell["dead"] / cell["alive"], deg=True) % 360)
             )
+        case ColorMode.live_death:
+            if(np.abs(cell["alive"]) ** 2 > LIFE_THRESHOLD):
+                color_v = 100
+            else:
+                color_v = 0
         case ColorMode.CONST:
             color_v = 100
         case _:

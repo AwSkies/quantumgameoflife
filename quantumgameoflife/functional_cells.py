@@ -1,6 +1,6 @@
 import numpy as np
 
-seed_value = 10
+#seed_value = 10
 FUNCTIONAL_CELL_TYPE = np.dtype([("dead", np.complex128), ("alive", np.complex128)])
 
 
@@ -31,6 +31,7 @@ def random_initialize(cell_matrix):
                 np.random.default_rng().random(), np.random.default_rng().random()
             )
             normalize(cell)
+    return cell_matrix
 
 
 def normalize_cells(grid):
@@ -60,4 +61,4 @@ def set_cell_value(cell, c_dead, c_alive):
 if __name__ == "__main__":
     matrix = make_cell_array(2, 2)
     random_initialize(matrix)
-    print(matrix)
+    #print(matrix)

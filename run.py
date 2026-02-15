@@ -10,6 +10,7 @@ from quantumgameoflife import functional_cells
 from quantumgameoflife import entanglement_cells
 from quantumgameoflife import ColorMode
 from quantumgameoflife import draw_grid
+from quantumgameoflife import hamiltonian
 from quantumgameoflife import non_entangled_propogation
 
 RES_X = 1280
@@ -58,12 +59,15 @@ PAN_SPEED = 10
 ZOOM_SPEED = 0.5
 SCALE_MIN = 1
 SCALE_MAX = 10
-N_CELLS_X = 10
-N_CELLS_Y = 20
+N_CELLS_X = 35
+N_CELLS_Y = 35
 CELL_SIZE = 10
 SPACING = 0.5  # spacing between cells in fraction of full cell size
 SIMULATION_STEP_FRAMES = 60
 
+phase_switch = False
+
+#LIFE_THRESHOLD = 0.5
 
 def main():
     pygame.init()
@@ -80,15 +84,12 @@ def main():
     entangled_lattice = entanglement_cells.Lattice(N_CELLS_X, N_CELLS_Y)
 
     # TODO: Initialize grid properly
-    grid = functional_cells.make_cell_array(N_CELLS_X, N_CELLS_Y)
-    functional_cells.fixed_initialize(grid, complex(1, 1), complex(-1, 1))
-    # for i, s in np.ndenumerate(grid):
-    #     x, y = i
-    #     x_frac = x / N_CELLS_X + 1e-5
-    #     y_frac = y / N_CELLS_Y + 1e-5
-    #     grid[i]["alive"] = x_frac * np.exp(2j * np.pi * x_frac)
-    #     grid[i]["dead"] = y_frac * np.exp(2j * np.pi * y_frac)
-    functional_cells.normalize_cells(grid)
+    # grid = hamiltonian.Lattice(N_CELLS_X, N_CELLS_Y)
+    grid = non_entangled_propogation.add_ghost_edge(functional_cells.random_initialize(functional_cells.make_cell_array(N_CELLS_X, N_CELLS_Y)))
+
+
+    
+
 
     def observe():
         nonlocal grid
@@ -213,7 +214,7 @@ def main():
                     pan += pygame.Vector2(event.x, -event.y) * PAN_SPEED
 
         entanglement_mode = mode_toggle.getValue()
-
+        
         if step_frames > SIMULATION_STEP_FRAMES * (1 - (speed_slider.getValue() / 100)):
             step += 1
             if entanglement_mode:
@@ -221,6 +222,7 @@ def main():
                 ...
             else:
                 # TODO: Perform grid operations in functional mode
+                grid = non_entangled_propogation.propogation_non_entangled(grid)
                 ...
             step_frames = 0
 
