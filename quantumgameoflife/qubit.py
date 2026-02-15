@@ -23,10 +23,10 @@ def random_initialize(cell_matrix):
     for row in cell_matrix:
         for cell in row:
             cell["dead"] = complex(
-                np.random.default_rng().random(), np.random.default_rng().random()
+                np.random.default_rng().random() * 2 - 1, np.random.default_rng().random() * 2 - 1
             )
             cell["alive"] = complex(
-                np.random.default_rng().random(), np.random.default_rng().random()
+                np.random.default_rng().random() * 2 - 1, np.random.default_rng().random() * 2 - 1
             )
             normalize(cell)
     return cell_matrix
