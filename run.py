@@ -17,6 +17,8 @@ RES_X = 1664
 RES_Y = 936
 
 SLIDER_HANDLE_COLOR = (66, 135, 245)
+DROPDOWN_FONT_SIZE = 30
+
 
 SLIDER_OFFSET = 100
 SLIDER_HEIGHT = 50
@@ -42,8 +44,8 @@ STEP_COUNTER_RADIUS = 5
 
 MODE_OPTIONS_OFFSET_X = 25
 MODE_OPTIONS_OFFSET_Y = 15
-MODE_OPTIONS_HEIGHT = 100
-MODE_OPTIONS_WIDTH = 150
+MODE_OPTIONS_HEIGHT = 50
+MODE_OPTIONS_WIDTH = 200
 MODE_OPTIONS_RADIUS = 10
 MODE_OPTIONS_X = RES_X - MODE_OPTIONS_WIDTH - MODE_OPTIONS_OFFSET_X
 PHASE_TOGGLE_WIDTH = 50
@@ -178,6 +180,7 @@ def main():
         MODE_OPTIONS_HEIGHT,
         "Game mode",
         list(GameMode),
+        fontSize=DROPDOWN_FONT_SIZE,
     )
     h_dropdown = Dropdown(
         screen,
@@ -187,6 +190,7 @@ def main():
         MODE_OPTIONS_HEIGHT,
         "Hue",
         COLOR_OPTIONS,
+        fontSize=DROPDOWN_FONT_SIZE,
         radius=MODE_OPTIONS_RADIUS,
     )
     s_dropdown = Dropdown(
@@ -197,6 +201,7 @@ def main():
         MODE_OPTIONS_HEIGHT,
         "Saturation",
         COLOR_OPTIONS,
+        fontSize=DROPDOWN_FONT_SIZE,
         radius=MODE_OPTIONS_RADIUS,
     )
     v_dropdown = Dropdown(
@@ -207,6 +212,7 @@ def main():
         MODE_OPTIONS_HEIGHT,
         "Value",
         COLOR_OPTIONS,
+        fontSize=DROPDOWN_FONT_SIZE,
         radius=MODE_OPTIONS_RADIUS,
     )
     function_dropdown = Dropdown(
@@ -217,6 +223,7 @@ def main():
         MODE_OPTIONS_HEIGHT,
         "Function",
         list(functional.Functions),
+        fontSize=DROPDOWN_FONT_SIZE,
         radius=MODE_OPTIONS_RADIUS,
     )
     phase_toggle = Toggle(
@@ -235,6 +242,7 @@ def main():
         MODE_OPTIONS_HEIGHT,
         "Preset",
         entanglement_presets,
+        fontSize=DROPDOWN_FONT_SIZE,
         radius=MODE_OPTIONS_RADIUS,
     )
     preset_button = Button(
@@ -261,7 +269,7 @@ def main():
         CLEAR_BUTTON_HEIGHT,
         radius=CLEAR_BUTTON_RADIUS,
         onClick=clear,
-        text="Clear"
+        text="Clear",
     )
     alive_slider = Slider(
         screen,
