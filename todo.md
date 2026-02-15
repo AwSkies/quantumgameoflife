@@ -7,7 +7,7 @@
 
 ## Implementation
 
-- [ ] Entangled mode
+- [X] Entangled mode
   - [ ] Click on cell to observe
-- [ ] Non-entangled mode
-- [ ] Hamiltonian mode
+- [X] Non-entangled mode
+- [X] Hamiltonian mode
