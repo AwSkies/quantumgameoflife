@@ -35,9 +35,9 @@ def color_unentangled(cell, color_mode_h, color_mode_s, color_mode_v):
         case ColorMode.B_PHASE:
             color_h = int(np.angle(cell["alive"], deg=True) % 360)
         case ColorMode.DELTA_PHASE_BA:
-            color_h = int(np.angle(cell["alive"] / cell["dead"], deg=True) % 360)
+            color_h = int((np.angle(cell["alive"], deg=True) - np.angle(cell["dead"], deg=True)) % 360)
         case ColorMode.DELTA_PHASE_AB:
-            color_h = int(np.angle(cell["dead"] / cell["alive"], deg=True) % 360)
+            color_h = int((np.angle(cell["dead"], deg=True) - np.angle(cell["alive"], deg=True)) % 360)
         case ColorMode.CONST:
             color_h = 0
         case _:
@@ -54,12 +54,12 @@ def color_unentangled(cell, color_mode_h, color_mode_s, color_mode_v):
         case ColorMode.DELTA_PHASE_BA:
             color_s = int(
                 (100.0 / 360.0)
-                * (np.angle(cell["alive"] / cell["dead"], deg=True) % 360)
+                * ((np.angle(cell["alive"], deg=True) - np.angle(cell["dead"], deg=True)) % 360)
             )
         case ColorMode.DELTA_PHASE_AB:
             color_s = int(
                 (100.0 / 360.0)
-                * (np.angle(cell["dead"] / cell["alive"], deg=True) % 360)
+                * ((np.angle(cell["dead"], deg=True) - np.angle(cell["alive"], deg=True)) % 360)
             )
         case ColorMode.CONST:
             color_s = 100
@@ -77,12 +77,12 @@ def color_unentangled(cell, color_mode_h, color_mode_s, color_mode_v):
         case ColorMode.DELTA_PHASE_BA:
             color_v = int(
                 (100.0 / 360.0)
-                * (np.angle(cell["alive"] / cell["dead"], deg=True) % 360)
+                * ((np.angle(cell["alive"], deg=True) - np.angle(cell["dead"], deg=True)) % 360)
             )
         case ColorMode.DELTA_PHASE_AB:
             color_v = int(
                 (100.0 / 360.0)
-                * (np.angle(cell["dead"] / cell["alive"], deg=True) % 360)
+                * ((np.angle(cell["dead"], deg=True) - np.angle(cell["alive"], deg=True)) % 360)
             )
         case ColorMode.CONST:
             color_v = 100
