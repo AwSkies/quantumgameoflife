@@ -8,7 +8,7 @@ from pygame_widgets.textbox import TextBox
 from pygame_widgets.dropdown import Dropdown
 from quantumgameoflife import functional
 from quantumgameoflife import hamiltonian
-from quantumgameoflife import entanglement_cells
+from quantumgameoflife import entanglement
 from quantumgameoflife import ColorMode
 from quantumgameoflife import GameMode
 from quantumgameoflife import draw_grid
@@ -95,7 +95,7 @@ def main():
     grid_drawn = np.zeros((RES_X, RES_Y), dtype=pygame.Rect)
     cell_selected = (0, 0)
 
-    entangled_lattice = entanglement_cells.Lattice(N_CELLS_X, N_CELLS_Y)
+    entangled_lattice = entanglement.Lattice(N_CELLS_X, N_CELLS_Y)
     functional_lattice = functional.Lattice(N_CELLS_X, N_CELLS_Y)
     hamiltonian_lattice = hamiltonian.Lattice(N_CELLS_X, N_CELLS_Y)
 
