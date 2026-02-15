@@ -42,8 +42,8 @@ STEP_COUNTER_RADIUS = 5
 
 MODE_OPTIONS_OFFSET_X = 25
 MODE_OPTIONS_OFFSET_Y = 15
-MODE_OPTIONS_HEIGHT = 50
-MODE_OPTIONS_WIDTH = 100
+MODE_OPTIONS_HEIGHT = 100
+MODE_OPTIONS_WIDTH = 150
 MODE_OPTIONS_RADIUS = 10
 MODE_OPTIONS_X = RES_X - MODE_OPTIONS_WIDTH - MODE_OPTIONS_OFFSET_X
 PHASE_TOGGLE_WIDTH = 50
@@ -66,6 +66,17 @@ EDITOR_LEFT_CAPTION_X = (
     EDITOR_OPTIONS_X - EDITOR_LEFT_CAPTION_WIDTH - EDITOR_OPTIONS_OFFSET_X
 )
 EDITOR_LABEL_X = EDITOR_LEFT_CAPTION_X - EDITOR_LABEL_WIDTH - EDITOR_OPTIONS_OFFSET_X
+ALIVE_Y = RES_Y - 3 * EDITOR_OPTIONS_OFFSET_Y - 3 * EDITOR_OPTIONS_HEIGHT
+PHASE1_Y = RES_Y - 2 * EDITOR_OPTIONS_OFFSET_Y - 2 * EDITOR_OPTIONS_HEIGHT
+PHASE2_Y = RES_Y - EDITOR_OPTIONS_OFFSET_Y - EDITOR_OPTIONS_HEIGHT
+
+CLEAR_BUTTON_OFFSET_X = EDITOR_OPTIONS_OFFSET_X
+CLEAR_BUTTON_OFFSET_Y = EDITOR_OPTIONS_OFFSET_Y
+CLEAR_BUTTON_WIDTH = EDITOR_OPTIONS_WIDTH
+CLEAR_BUTTON_HEIGHT = 75
+CLEAR_BUTTON_RADIUS = 10
+CLEAR_BUTTON_Y = ALIVE_Y - CLEAR_BUTTON_OFFSET_Y - CLEAR_BUTTON_HEIGHT
+CLEAR_BUTTON_X = RES_X - CLEAR_BUTTON_WIDTH - CLEAR_BUTTON_OFFSET_X
 
 COLOR_OPTIONS = list(ColorMode)
 
@@ -121,6 +132,13 @@ def main():
     def observe():
         if game_mode == GameMode.FUNCTIONAL:
             functional_lattice.observe()
+
+    def clear():
+        match game_mode:
+            case GameMode.FUNCTIONAL:
+                functional_lattice.grid = np.zeros_like(functional_lattice.grid)
+            case GameMode.HAMILTONIAN:
+                hamiltonian_lattice.grid = np.zeros_like(hamiltonian_lattice.grid)
 
     speed_slider = Slider(
         screen,
@@ -235,7 +253,16 @@ def main():
         ),
         text="Set to preset",
     )
-    ALIVE_Y = RES_Y - 3 * EDITOR_OPTIONS_OFFSET_Y - 3 * EDITOR_OPTIONS_HEIGHT
+    clear_button = Button(
+        screen,
+        CLEAR_BUTTON_X,
+        CLEAR_BUTTON_Y,
+        CLEAR_BUTTON_WIDTH,
+        CLEAR_BUTTON_HEIGHT,
+        radius=CLEAR_BUTTON_RADIUS,
+        onClick=clear,
+        text="Clear"
+    )
     alive_slider = Slider(
         screen,
         EDITOR_OPTIONS_X,
@@ -272,7 +299,6 @@ def main():
         EDITOR_CAPTION_HEIGHT,
     )
     alive_label.setText("|b|:")
-    PHASE1_Y = RES_Y - 2 * EDITOR_OPTIONS_OFFSET_Y - 2 * EDITOR_OPTIONS_HEIGHT
     phase1_slider = Slider(
         screen,
         EDITOR_OPTIONS_X,
@@ -309,7 +335,6 @@ def main():
         EDITOR_CAPTION_HEIGHT,
     )
     phase1_label.setText("arg(a):")
-    PHASE2_Y = RES_Y - EDITOR_OPTIONS_OFFSET_Y - EDITOR_OPTIONS_HEIGHT
     phase2_slider = Slider(
         screen,
         EDITOR_OPTIONS_X,
