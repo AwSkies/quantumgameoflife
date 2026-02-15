@@ -491,7 +491,20 @@ def main():
             v_dropdown.getSelected(),
         )
 
-        for component in [alive_slider, phase1_slider, phase2_slider]:
+        for component in [
+            alive_slider,
+            phase1_slider,
+            phase2_slider,
+            alive_left_caption,
+            alive_right_caption,
+            alive_label,
+            phase1_left_caption,
+            phase1_right_caption,
+            phase1_label,
+            phase2_left_caption,
+            phase2_right_caption,
+            phase2_label,
+        ]:
             if qubits:
                 component.show()
             else:
