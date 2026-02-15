@@ -116,6 +116,7 @@ def draw_grid(
     color_mode_s,
     color_mode_v,
 ):
+    drawn = np.zeros(np.shape(grid), dtype=pygame.Rect)
     for i, x in np.ndenumerate(grid):
         pos = (
             base
@@ -127,8 +128,9 @@ def draw_grid(
             x, entanglement_mode, color_mode_h, color_mode_s, color_mode_v
         )
 
-        pygame.draw.rect(
+        drawn[i] = pygame.draw.rect(
             screen,
             color,
             pygame.Rect(pos, (scale, scale)),
         )
+    return drawn

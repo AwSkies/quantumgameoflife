@@ -79,17 +79,22 @@ class Lattice:
 
     def __init__(self, x, y) -> None:
         self.grid = make_cell_array(x, y)
-        self.function = Functions.ADDITION
+        fixed_initialize(self.grid, 0, 1 + 1j)
+        self.function = None
 
-    def set_function(self, f: Functions):
+    def set_function(self, f):
         self.function = f
 
     def step(self):
+        if self.function == None:
+            self.function = Functions.CONWAY
         match self.function:
             case Functions.ADDITION:
                 f = self.addition
             case Functions.MULTIPLICATION:
                 f = self.multiplication
+            case Functions.CONWAY:
+                f = self.conway
 
         for i, psi in np.ndenumerate(self.grid):
             f(psi, get_neighbors(self.grid, i))
