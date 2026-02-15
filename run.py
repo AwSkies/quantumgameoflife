@@ -44,12 +44,18 @@ STEP_COUNTER_HEIGHT = 50
 STEP_COUNTER_WIDTH = 50
 STEP_COUNTER_RADIUS = 10
 
-FUNCTIONAL_OPTIONS_OFFSET_X = 25
-FUNCTIONAL_OPTIONS_OFFSET_Y = 15
-FUNCTIONAL_OPTIONS_HEIGHT = 50
-FUNCTIONAL_OPTIONS_WIDTH = 100
-FUNCTIONAL_OPTIONS_RADIUS = 10
-FUNCTIONAL_OPTIONS_X = RES_X - FUNCTIONAL_OPTIONS_WIDTH - FUNCTIONAL_OPTIONS_OFFSET_X
+MODE_OPTIONS_OFFSET_X = 25
+MODE_OPTIONS_OFFSET_Y = 15
+MODE_OPTIONS_HEIGHT = 50
+MODE_OPTIONS_WIDTH = 100
+MODE_OPTIONS_RADIUS = 10
+MODE_OPTIONS_X = RES_X - MODE_OPTIONS_WIDTH - MODE_OPTIONS_OFFSET_X
+
+EDITOR_OPTIONS_OFFSET_X = 25
+EDITOR_OPTIONS_OFFSET_Y = 25
+EDITOR_OPTIONS_HEIGHT = 30
+EDITOR_OPTIONS_WIDTH = 100
+EDITOR_OPTIONS_X = RES_X - EDITOR_OPTIONS_WIDTH - EDITOR_OPTIONS_OFFSET_X
 
 COLOR_OPTIONS = list(ColorMode)
 
@@ -87,10 +93,6 @@ def main():
     step_frames = 0
     grid_drawn = np.zeros((RES_X, RES_Y), dtype=pygame.Rect)
     cell_selected = (0, 0)
-
-    prev_alive_slider = 100
-    prev_phase1_slider = 0
-    prev_phase2_slider = 0
 
     entangled_lattice = entanglement_cells.Lattice(N_CELLS_X, N_CELLS_Y)
     functional_lattice = functional_cells.Lattice(N_CELLS_X, N_CELLS_Y)
@@ -137,62 +139,59 @@ def main():
     )
     h_dropdown = Dropdown(
         screen,
-        FUNCTIONAL_OPTIONS_X,
-        MODE_TOGGLE_Y + MODE_TOGGLE_HEIGHT + FUNCTIONAL_OPTIONS_OFFSET_Y,
-        FUNCTIONAL_OPTIONS_WIDTH,
-        FUNCTIONAL_OPTIONS_HEIGHT,
+        MODE_OPTIONS_X,
+        MODE_TOGGLE_Y + MODE_TOGGLE_HEIGHT + MODE_OPTIONS_OFFSET_Y,
+        MODE_OPTIONS_WIDTH,
+        MODE_OPTIONS_HEIGHT,
         "Hue",
         COLOR_OPTIONS,
-        radius=FUNCTIONAL_OPTIONS_RADIUS,
+        radius=MODE_OPTIONS_RADIUS,
     )
     s_dropdown = Dropdown(
         screen,
-        FUNCTIONAL_OPTIONS_X,
+        MODE_OPTIONS_X,
         MODE_TOGGLE_Y
         + MODE_TOGGLE_HEIGHT
-        + 2 * FUNCTIONAL_OPTIONS_OFFSET_Y
-        + FUNCTIONAL_OPTIONS_HEIGHT,
-        FUNCTIONAL_OPTIONS_WIDTH,
-        FUNCTIONAL_OPTIONS_HEIGHT,
+        + 2 * MODE_OPTIONS_OFFSET_Y
+        + MODE_OPTIONS_HEIGHT,
+        MODE_OPTIONS_WIDTH,
+        MODE_OPTIONS_HEIGHT,
         "Saturation",
         COLOR_OPTIONS,
-        radius=FUNCTIONAL_OPTIONS_RADIUS,
+        radius=MODE_OPTIONS_RADIUS,
     )
     v_dropdown = Dropdown(
         screen,
-        FUNCTIONAL_OPTIONS_X,
+        MODE_OPTIONS_X,
         MODE_TOGGLE_Y
         + MODE_TOGGLE_HEIGHT
-        + 3 * FUNCTIONAL_OPTIONS_OFFSET_Y
-        + 2 * FUNCTIONAL_OPTIONS_HEIGHT,
-        FUNCTIONAL_OPTIONS_WIDTH,
-        FUNCTIONAL_OPTIONS_HEIGHT,
+        + 3 * MODE_OPTIONS_OFFSET_Y
+        + 2 * MODE_OPTIONS_HEIGHT,
+        MODE_OPTIONS_WIDTH,
+        MODE_OPTIONS_HEIGHT,
         "Value",
         COLOR_OPTIONS,
-        radius=FUNCTIONAL_OPTIONS_RADIUS,
+        radius=MODE_OPTIONS_RADIUS,
     )
     function_dropdown = Dropdown(
         screen,
-        FUNCTIONAL_OPTIONS_X,
+        MODE_OPTIONS_X,
         MODE_TOGGLE_Y
         + MODE_TOGGLE_HEIGHT
-        + 4 * FUNCTIONAL_OPTIONS_OFFSET_Y
-        + 3 * FUNCTIONAL_OPTIONS_HEIGHT,
-        FUNCTIONAL_OPTIONS_WIDTH,
-        FUNCTIONAL_OPTIONS_HEIGHT,
+        + 4 * MODE_OPTIONS_OFFSET_Y
+        + 3 * MODE_OPTIONS_HEIGHT,
+        MODE_OPTIONS_WIDTH,
+        MODE_OPTIONS_HEIGHT,
         "Function",
         list(functional_cells.Functions),
-        radius=FUNCTIONAL_OPTIONS_RADIUS,
+        radius=MODE_OPTIONS_RADIUS,
     )
     alive_slider = Slider(
         screen,
-        FUNCTIONAL_OPTIONS_X,
-        MODE_TOGGLE_Y
-        + MODE_TOGGLE_HEIGHT
-        + 5 * FUNCTIONAL_OPTIONS_OFFSET_Y
-        + 4 * FUNCTIONAL_OPTIONS_HEIGHT,
-        FUNCTIONAL_OPTIONS_WIDTH,
-        FUNCTIONAL_OPTIONS_HEIGHT,
+        EDITOR_OPTIONS_X,
+        RES_Y - 3 * EDITOR_OPTIONS_OFFSET_Y - 3 * EDITOR_OPTIONS_HEIGHT,
+        EDITOR_OPTIONS_WIDTH,
+        EDITOR_OPTIONS_HEIGHT,
         min=0,
         max=100,
         step=1,
@@ -200,13 +199,10 @@ def main():
     )
     phase1_slider = Slider(
         screen,
-        FUNCTIONAL_OPTIONS_X,
-        MODE_TOGGLE_Y
-        + MODE_TOGGLE_HEIGHT
-        + 6 * FUNCTIONAL_OPTIONS_OFFSET_Y
-        + 5 * FUNCTIONAL_OPTIONS_HEIGHT,
-        FUNCTIONAL_OPTIONS_WIDTH,
-        FUNCTIONAL_OPTIONS_HEIGHT,
+        EDITOR_OPTIONS_X,
+        RES_Y - 2 * EDITOR_OPTIONS_OFFSET_Y - 2 * EDITOR_OPTIONS_HEIGHT,
+        EDITOR_OPTIONS_WIDTH,
+        EDITOR_OPTIONS_HEIGHT,
         min=0,
         max=359,
         step=1,
@@ -214,13 +210,10 @@ def main():
     )
     phase2_slider = Slider(
         screen,
-        FUNCTIONAL_OPTIONS_X,
-        MODE_TOGGLE_Y
-        + MODE_TOGGLE_HEIGHT
-        + 7 * FUNCTIONAL_OPTIONS_OFFSET_Y
-        + 6 * FUNCTIONAL_OPTIONS_HEIGHT,
-        FUNCTIONAL_OPTIONS_WIDTH,
-        FUNCTIONAL_OPTIONS_HEIGHT,
+        EDITOR_OPTIONS_X,
+        RES_Y - EDITOR_OPTIONS_OFFSET_Y - EDITOR_OPTIONS_HEIGHT,
+        EDITOR_OPTIONS_WIDTH,
+        EDITOR_OPTIONS_HEIGHT,
         min=0,
         max=359,
         step=1,
