@@ -7,4 +7,3 @@ class ColorMode(StrEnum):
     DELTA_PHASE_BA = 'arg(b / a)'
     DELTA_PHASE_AB = 'arg(a / b)'
     CONST = 'Constant'
-    live_death = 'life or death'

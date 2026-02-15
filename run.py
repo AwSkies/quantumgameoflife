@@ -6,12 +6,12 @@ from pygame_widgets.button import Button
 from pygame_widgets.toggle import Toggle
 from pygame_widgets.textbox import TextBox
 from pygame_widgets.dropdown import Dropdown
-from quantumgameoflife import functional_cells
+from quantumgameoflife import functional
+from quantumgameoflife import hamiltonian
 from quantumgameoflife import entanglement_cells
 from quantumgameoflife import ColorMode
+from quantumgameoflife import GameMode
 from quantumgameoflife import draw_grid
-from quantumgameoflife import hamiltonian
-from quantumgameoflife import non_entangled_propogation
 
 RES_X = 1280
 RES_Y = 720
@@ -31,14 +31,6 @@ PLAY_TOGGLE_OFFSET_X = 100
 PLAY_TOGGLE_OFFSET_Y = 50
 PLAY_TOGGLE_HEIGHT = 25
 PLAY_TOGGLE_WIDTH = 50
-
-MODE_TOGGLE_OFFSET_X = 50
-MODE_TOGGLE_OFFSET_Y = 50
-MODE_TOGGLE_HEIGHT = 25
-MODE_TOGGLE_WIDTH = 50
-MODE_TOGGLE_RADIUS = 25
-MODE_TOGGLE_X = RES_X - MODE_TOGGLE_OFFSET_X - MODE_TOGGLE_WIDTH
-MODE_TOGGLE_Y = MODE_TOGGLE_OFFSET_Y
 
 STEP_COUNTER_OFFSET_X = 10
 STEP_COUNTER_OFFSET_Y = 10
@@ -73,13 +65,13 @@ SIMULATION_STEP_FRAMES = 60
 
 
 def update_editor_values(
-    grid, entanglement_mode, cell_selected, alive_slider, phase1_slider, phase2_slider
+    grid, qubits, cell_selected, alive_slider, phase1_slider, phase2_slider
 ):
-    if not entanglement_mode:
+    if qubits:
         c = grid[cell_selected]
         alive_slider.setValue(int(np.square(np.abs(c["alive"])) * 100))
-        phase1_slider.setValue(int(np.angle(c["dead"], deg=True)))
-        phase2_slider.setValue(int(np.angle(c["alive"], deg=True)))
+        phase1_slider.setValue(int(np.angle(c["dead"], deg=True) % 360))
+        phase2_slider.setValue(int(np.angle(c["alive"], deg=True) % 360))
 
 
 def main():
@@ -88,7 +80,8 @@ def main():
     clock = pygame.time.Clock()
 
     running = True
-    entanglement_mode = False
+    game_mode = GameMode.FUNCTIONAL
+    qubits = True
     hamiltonian_phase_switch = False
     pan = pygame.Vector2()
     scale = 1.0
@@ -98,7 +91,7 @@ def main():
     cell_selected = (0, 0)
 
     entangled_lattice = entanglement_cells.Lattice(N_CELLS_X, N_CELLS_Y)
-    functional_lattice = functional_cells.Lattice(N_CELLS_X, N_CELLS_Y)
+    functional_lattice = functional.Lattice(N_CELLS_X, N_CELLS_Y)
     hamiltonian_lattice = hamiltonian.Lattice(N_CELLS_X, N_CELLS_Y)
 
     def observe():
@@ -133,18 +126,19 @@ def main():
         PLAY_TOGGLE_HEIGHT,
         startOn=False,
     )
-    mode_toggle = Toggle(
+    mode_dropdown = Dropdown(
         screen,
-        MODE_TOGGLE_X,
-        MODE_TOGGLE_Y,
-        MODE_TOGGLE_WIDTH,
-        MODE_TOGGLE_HEIGHT,
-        startOn=entanglement_mode,
+        MODE_OPTIONS_X,
+        MODE_OPTIONS_OFFSET_Y,
+        MODE_OPTIONS_WIDTH,
+        MODE_OPTIONS_HEIGHT,
+        "Game mode",
+        list(GameMode),
     )
     h_dropdown = Dropdown(
         screen,
         MODE_OPTIONS_X,
-        MODE_TOGGLE_Y + MODE_TOGGLE_HEIGHT + MODE_OPTIONS_OFFSET_Y,
+        MODE_OPTIONS_HEIGHT + 2 * MODE_OPTIONS_OFFSET_Y,
         MODE_OPTIONS_WIDTH,
         MODE_OPTIONS_HEIGHT,
         "Hue",
@@ -154,10 +148,7 @@ def main():
     s_dropdown = Dropdown(
         screen,
         MODE_OPTIONS_X,
-        MODE_TOGGLE_Y
-        + MODE_TOGGLE_HEIGHT
-        + 2 * MODE_OPTIONS_OFFSET_Y
-        + MODE_OPTIONS_HEIGHT,
+        2 * MODE_OPTIONS_HEIGHT + 3 * MODE_OPTIONS_OFFSET_Y,
         MODE_OPTIONS_WIDTH,
         MODE_OPTIONS_HEIGHT,
         "Saturation",
@@ -167,10 +158,7 @@ def main():
     v_dropdown = Dropdown(
         screen,
         MODE_OPTIONS_X,
-        MODE_TOGGLE_Y
-        + MODE_TOGGLE_HEIGHT
-        + 3 * MODE_OPTIONS_OFFSET_Y
-        + 2 * MODE_OPTIONS_HEIGHT,
+        3 * MODE_OPTIONS_HEIGHT + 4 * MODE_OPTIONS_OFFSET_Y,
         MODE_OPTIONS_WIDTH,
         MODE_OPTIONS_HEIGHT,
         "Value",
@@ -180,14 +168,11 @@ def main():
     function_dropdown = Dropdown(
         screen,
         MODE_OPTIONS_X,
-        MODE_TOGGLE_Y
-        + MODE_TOGGLE_HEIGHT
-        + 4 * MODE_OPTIONS_OFFSET_Y
-        + 3 * MODE_OPTIONS_HEIGHT,
+        4 * MODE_OPTIONS_HEIGHT + 5 * MODE_OPTIONS_OFFSET_Y,
         MODE_OPTIONS_WIDTH,
         MODE_OPTIONS_HEIGHT,
         "Function",
-        list(functional_cells.Functions),
+        list(functional.Functions),
         radius=MODE_OPTIONS_RADIUS,
     )
     alive_slider = Slider(
@@ -235,6 +220,17 @@ def main():
     step_counter.disable()
 
     while running:
+        game_mode = mode_dropdown.getSelected()
+        if game_mode == None:
+            game_mode = GameMode.FUNCTIONAL
+        qubits = game_mode == GameMode.FUNCTIONAL or game_mode == GameMode.HAMILTONIAN
+
+        match game_mode:
+            case GameMode.FUNCTIONAL:
+                editable_grid = functional_lattice.grid
+            case GameMode.HAMILTONIAN:
+                editable_grid = hamiltonian_lattice.grid
+
         # poll for events
         # pygame.QUIT event means the user clicked X to close your window
         events = pygame.event.get()
@@ -277,27 +273,27 @@ def main():
                         if r.collidepoint(pos):
                             cell_selected = i
                             clicked = True
-                    if clicked:
+                    if clicked and qubits:
                         # Update sliders
                         update_editor_values(
-                            functional_lattice.grid,
-                            entanglement_mode,
+                            editable_grid,
+                            qubits,
                             cell_selected,
                             alive_slider,
                             phase1_slider,
                             phase2_slider,
                         )
 
-        entanglement_mode = mode_toggle.getValue()
-        
         if step_frames > SIMULATION_STEP_FRAMES * (1 - (speed_slider.getValue() / 100)):
             step += 1
-            if entanglement_mode:
-                entangled_lattice.step()
-            else:
-                functional_lattice.step()
-                grid = hamiltonian_lattice.propogation(hamiltonian_phase_switch)
             step_frames = 0
+            match game_mode:
+                case GameMode.FUNCTIONAL:
+                    functional_lattice.step()
+                case GameMode.ENTANGLEMENT:
+                    entangled_lattice.step()
+                case GameMode.HAMILTONIAN:
+                    hamiltonian_lattice.step(hamiltonian_phase_switch)
 
         functional_lattice.set_function(function_dropdown.getSelected())
 
@@ -305,34 +301,37 @@ def main():
         screen.fill("black")
 
         # Set the selected cell's values
-        if not entanglement_mode:
+        if qubits:
             if not play_toggle.getValue():
                 r_alive = np.sqrt(alive_slider.getValue() / 100.0)
                 phase1 = 2j * np.pi * phase1_slider.getValue() / 360
                 phase2 = 2j * np.pi * phase2_slider.getValue() / 360
-                functional_cells.set_cell_value(
-                    functional_lattice.grid[cell_selected],
+                functional.set_cell_value(
+                    editable_grid[cell_selected],
                     np.sqrt(1 - np.square(r_alive)) * np.exp(phase1),
                     r_alive * np.exp(phase2),
                 )
             else:
                 update_editor_values(
-                    functional_lattice.grid,
-                    entanglement_mode,
+                    editable_grid,
+                    qubits,
                     cell_selected,
                     alive_slider,
                     phase1_slider,
                     phase2_slider,
                 )
 
-        if entanglement_mode:
-            grid = entangled_lattice.alive_magnitudes
-        else:
-            grid = functional_lattice.grid
+        match game_mode:
+            case GameMode.FUNCTIONAL:
+                grid = functional_lattice.grid
+            case GameMode.ENTANGLEMENT:
+                grid = entangled_lattice.alive_magnitudes
+            case GameMode.HAMILTONIAN:
+                grid = hamiltonian_lattice.grid
 
         grid_drawn = draw_grid(
             screen,
-            entanglement_mode,
+            game_mode,
             grid,
             pan,
             CELL_SIZE * scale,
@@ -342,19 +341,24 @@ def main():
             v_dropdown.getSelected(),
         )
 
+        for component in [alive_slider, phase1_slider, phase2_slider]:
+            if qubits:
+                component.show()
+            else:
+                component.hide()
+
         for component in [
-            phase2_slider,
-            phase1_slider,
-            alive_slider,
             function_dropdown,
             v_dropdown,
             s_dropdown,
             h_dropdown,
         ]:
-            if entanglement_mode:
-                component.hide()
-            else:
+            if game_mode == GameMode.FUNCTIONAL:
                 component.show()
+            else:
+                component.hide()
+
+        mode_dropdown.show()
 
         step_counter.setText(str(step))
 
