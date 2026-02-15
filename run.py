@@ -65,7 +65,7 @@ CELL_SIZE = 10
 SPACING = 0.5  # spacing between cells in fraction of full cell size
 SIMULATION_STEP_FRAMES = 60
 
-phase_switch = False
+phase_switch = True
 
 #LIFE_THRESHOLD = 0.5
 
@@ -85,10 +85,9 @@ def main():
 
     # TODO: Initialize grid properly
     # grid = hamiltonian.Lattice(N_CELLS_X, N_CELLS_Y)
-    grid = non_entangled_propogation.add_ghost_edge(functional_cells.random_initialize(functional_cells.make_cell_array(N_CELLS_X, N_CELLS_Y)))
-
-
-    
+    #grid = non_entangled_propogation.add_ghost_edge(functional_cells.random_initialize(functional_cells.make_cell_array(N_CELLS_X, N_CELLS_Y)))
+    hamiltonian_lattice = hamiltonian.Lattice(N_CELLS_X, N_CELLS_Y)
+    grid = hamiltonian_lattice.grid
 
 
     def observe():
@@ -222,7 +221,8 @@ def main():
                 ...
             else:
                 # TODO: Perform grid operations in functional mode
-                grid = non_entangled_propogation.propogation_non_entangled(grid)
+                #grid = non_entangled_propogation.propogation_non_entangled(grid)
+                grid = hamiltonian_lattice.propogation(phase_switch)
                 ...
             step_frames = 0
 
