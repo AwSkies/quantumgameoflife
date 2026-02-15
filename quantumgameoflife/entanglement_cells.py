@@ -4,7 +4,7 @@ from quantumgameoflife.shapes import *
 import numpy as np
 import pickle
 RENDER_PHASE = True
-CONFIGURATION_NUMBER = 11
+CONFIGURATION_NUMBER = 4
 
 class Lattice:
     def __init__(self, x : int, y : int, configuration_number=CONFIGURATION_NUMBER, render_phase=RENDER_PHASE):
@@ -228,16 +228,16 @@ class Lattice:
             grid1 = self.get_grid_for_single_state(x, y, indices1)
             grid2 = self.get_grid_for_single_state(x, y, indices2)
             self.grid = grid1 + grid2
-        elif configuration_number == 3: #2 gliders, interfering superposition
+        elif configuration_number == 3 or configuration_number == 4: #2 gliders, interfering superposition
             indices1 = np.array([(3,1), (3, 2), (3, 3), (2, 3), (1, 2)])
             indices2 = np.array([(3,1), (3, 2), (3, 3), (4, 1), (5, 2)])
             indices2 = (indices2 + np.array([6, 4])) % np.array([x, y])
             grid1 = self.get_grid_for_single_state(x, y, indices1)
-            phase = np.pi*0.5
+            phase = np.pi*0.2 if configuration_number == 3 else np.pi*0.5
             grid2 = np.exp(phase * 1j)*self.get_grid_for_single_state(x, y, indices2)
             self.grid = grid2 + grid1
 
-        elif configuration_number == 4: #superposition of random gliders
+        elif configuration_number == 5: #superposition of random gliders
             indices1 = np.array([(3, 1), (3, 2), (3, 3), (2, 3), (1, 2)])
             indices2 = np.array([(3, 1), (3, 2), (3, 3), (4, 1), (5, 2)])
             indices3 = np.array([(3, 1), (3, 2), (3, 3), (2, 1), (1, 2)])
@@ -256,13 +256,13 @@ class Lattice:
 
             self.grid = grid
 
-        elif configuration_number == 5: #superposition of random gliders
+        elif configuration_number == 6: #superposition of random gliders
             grid = np.zeros((x, y, 512), dtype=np.complex128)
             grid += 2**(1 + np.random.rand(x, y, 512)*5)
             # grid = np.random.rand(x, y, 512) + np.random.rand(x, y, 512)*1j
             self.grid = grid
 
-        elif configuration_number == 6: #block and glider
+        elif configuration_number == 7: #block and glider
             grid = np.zeros((x, y, 512), dtype=np.complex128)
             indices1 = np.array([(3, 1), (3, 2), (3, 3), (2, 3), (1, 2)])
             block_indices = np.array([[6, 6], [6, 7], [7, 6], [7, 7]]) + 5
@@ -270,7 +270,7 @@ class Lattice:
             grid +=  self.get_grid_for_single_state(x, y, block_indices)
             self.grid = grid
 
-        elif configuration_number == 7: #pulsar
+        elif configuration_number == 8: #pulsar
             pulsar = PULSAR
             pulsar_x, pulsar_y = pulsar.shape
 
@@ -281,7 +281,7 @@ class Lattice:
             grid = self.get_grid_for_single_state(x, y, binary_array=binary_array)
             self.grid = grid
 
-        elif configuration_number == 8: #pulsar block superposition
+        elif configuration_number == 9: #pulsar block superposition
 
             pulsar_x, pulsar_y = PULSAR.shape
 
@@ -299,7 +299,7 @@ class Lattice:
             grid_2 = np.roll(grid, (4, 4))
             self.grid = grid + 1j*grid_2
 
-        elif configuration_number == 9:
+        elif configuration_number == 10:
             hw_x, hw_y = HWSS.shape
             corner = (2, 2)
             binary_array = np.zeros((x, y), dtype=int)
@@ -310,12 +310,6 @@ class Lattice:
             grid2 = self.get_grid_for_single_state(x, y, binary_array=binary_array_2)
 
             self.grid = grid + np.exp((np.pi/2) *1j) * grid2
-
-        elif configuration_number == 10:
-            grid = np.zeros((x, y, 512), dtype=np.complex128)
-            grid += np.random.rand(x, y, 512)*1j
-            grid += np.random.rand(x, y, 512)
-            self.grid = grid
 
         elif configuration_number == 11:
             hw_x, hw_y = HWSS.shape
@@ -328,7 +322,26 @@ class Lattice:
             binary_array_2 = np.roll(binary_array[::-1, :], (-5, 5))
             grid2 = self.get_grid_for_single_state(x, y, binary_array=binary_array_2)
 
-            self.grid = grid + np.exp(0.1*1j) * grid2
+            self.grid = grid + np.exp(0.7j) * grid2
+
+        elif configuration_number == 12:
+            hw_x, hw_y = HWSS.shape
+            corner = (2, 2)
+            print(x, y)
+            binary_array = np.zeros((x, y), dtype=int)
+            binary_array[corner[0]:corner[0] + hw_x, corner[1]:corner[1] + hw_y] = HWSS
+            grid = self.get_grid_for_single_state(x, y, binary_array=binary_array)
+
+            binary_array_2 = np.roll(binary_array[::-1, :], (-5, 5))
+            grid2 = self.get_grid_for_single_state(x, y, binary_array=binary_array_2)
+
+            self.grid = grid + 1 * grid2
+
+        elif configuration_number == 13:
+            grid = np.zeros((x, y, 512), dtype=np.complex128)
+            grid += np.random.rand(x, y, 512)*1j
+            grid += np.random.rand(x, y, 512)
+            self.grid = grid
 
         else:
             raise(NotImplementedError)
@@ -378,10 +391,14 @@ class Lattice:
         self.remove_0_states()
         magnitudes = np.abs(self.grid)**2
         cell_magnitudes = np.sum(magnitudes, axis=2)
+        print(cell_magnitudes)
+
         # print(cell_magnitudes.shape)
         self.grid = self.grid / cell_magnitudes[:, :, np.newaxis]**0.5
         self.magnitudes = np.abs(self.grid) ** 2
         self.alive_magnitudes = np.sum(self.magnitudes[:, :, 256::], axis=2)
+        self.alive_magnitudes = np.nan_to_num(self.alive_magnitudes, nan=0.0)
+        print(self.alive_magnitudes)
         # print(np.sum(self.grid[:, :, 256::]))
         self.alive_angles = np.angle(np.sum(self.grid[:, :, 256::], axis=2))
         self.alive_angles = (self.alive_angles * 180 / np.pi) % 360
@@ -470,7 +487,7 @@ def next_center_state(grid):
         # return live_neighbors in (1, 2, 3, 4, 5, 6)
     else:
         # Dead cell becomes alive with exactly 3 neighbors
-        # return live_neighbors in (2, 3, 4, 5)
+        # return live_neighbors in (0, 3)
         return live_neighbors == 3
 
 
