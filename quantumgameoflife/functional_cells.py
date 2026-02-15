@@ -1,11 +1,11 @@
 import numpy as np
 
 seed_value = 10
-CELL_TYPE = np.dtype([("dead", np.complex128), ("alive", np.complex128)])
+FUNCTIONAL_CELL_TYPE = np.dtype([("dead", np.complex128), ("alive", np.complex128)])
 
 
 def make_cell_array(x, y):
-    return np.zeros((x, y), dtype=CELL_TYPE)
+    return np.zeros((x, y), dtype=FUNCTIONAL_CELL_TYPE)
 
 
 def fixed_initialize(cell_matrix, a, b):

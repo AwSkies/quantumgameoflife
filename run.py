@@ -6,7 +6,8 @@ from pygame_widgets.button import Button
 from pygame_widgets.toggle import Toggle
 from pygame_widgets.textbox import TextBox
 from pygame_widgets.dropdown import Dropdown
-from quantumgameoflife import cells
+from quantumgameoflife import functional_cells
+from quantumgameoflife import entanglement_cells
 from quantumgameoflife import ColorMode
 from quantumgameoflife import draw_grid
 from quantumgameoflife import non_entangled_propogation
@@ -61,7 +62,7 @@ N_CELLS_X = 10
 N_CELLS_Y = 20
 CELL_SIZE = 10
 SPACING = 0.5  # spacing between cells in fraction of full cell size
-SIMULATION_SPEED = 1
+SIMULATION_STEP_FRAMES = 60
 
 
 def main():
@@ -74,17 +75,20 @@ def main():
     pan = pygame.Vector2()
     scale = 1.0
     step = 0
+    step_frames = 0
+
+    entangled_lattice = entanglement_cells.Lattice(N_CELLS_X, N_CELLS_Y)
 
     # TODO: Initialize grid properly
-    grid = cells.make_cell_array(N_CELLS_X, N_CELLS_Y)
-    cells.fixed_initialize(grid, complex(1, 1), complex(-1, 1))
+    grid = functional_cells.make_cell_array(N_CELLS_X, N_CELLS_Y)
+    functional_cells.fixed_initialize(grid, complex(1, 1), complex(-1, 1))
     # for i, s in np.ndenumerate(grid):
     #     x, y = i
     #     x_frac = x / N_CELLS_X + 1e-5
     #     y_frac = y / N_CELLS_Y + 1e-5
     #     grid[i]["alive"] = x_frac * np.exp(2j * np.pi * x_frac)
     #     grid[i]["dead"] = y_frac * np.exp(2j * np.pi * y_frac)
-    cells.normalize_cells(grid)
+    functional_cells.normalize_cells(grid)
 
     def observe():
         nonlocal grid
@@ -210,11 +214,23 @@ def main():
 
         entanglement_mode = mode_toggle.getValue()
 
+        if step_frames > SIMULATION_STEP_FRAMES * (1 - (speed_slider.getValue() / 100)):
+            step += 1
+            if entanglement_mode:
+                entangled_lattice.step()
+                ...
+            else:
+                # TODO: Perform grid operations in functional mode
+                ...
+            step_frames = 0
+
         # fill the screen with a color to wipe away anything from last frame
         screen.fill("black")
 
-        # TODO: Perform grid operations
-        grid = non_entangled_propogation(grid)
+        if entanglement_mode:
+            grid = entangled_lattice.alive_magnitudes
+        else:
+            ...
 
         draw_grid(
             screen,
@@ -236,9 +252,8 @@ def main():
 
         step_counter.setText(str(step))
 
-        # TODO: Do step calculations based on `speed_slider.getValue()` and `SIMULATION_SPEED`. Maybe count the nunber of frames passed.
         if play_toggle.getValue():
-            step += 1
+            step_frames += 1
 
         pygame_widgets.update(events)
         # flip() the display to put your work on screen

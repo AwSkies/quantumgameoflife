@@ -6,12 +6,14 @@ from .display_type import ColorMode
 COLOR_ALPHA = 1.0
 
 
-def color_entangled(cell, mode, color_menu_h, color_menu_s, color_menu_l):
+def color_entangled(cell):
     # TODO: Write function for calculating color in entangled mode
-    return 0
+    color = pygame.Color(0, 0, 0)
+    color.hsva = (0, 0, cell * 100, COLOR_ALPHA)
+    return color
 
 
-def color_unentangled(cell, mode, color_mode_h, color_mode_s, color_mode_v):
+def color_unentangled(cell, color_mode_h, color_mode_s, color_mode_v):
     color = pygame.Color(0, 0, 0)
     # Set defaults for if no mode is selected
     if color_mode_h == None:
@@ -98,9 +100,9 @@ def get_color(
     color_mode_v: ColorMode,
 ):
     if mode:
-        return color_entangled(cell, mode, color_mode_h, color_mode_s, color_mode_v)
+        return color_entangled(cell)
     else:
-        return color_unentangled(cell, mode, color_mode_h, color_mode_s, color_mode_v)
+        return color_unentangled(cell, color_mode_h, color_mode_s, color_mode_v)
 
 
 def draw_grid(
