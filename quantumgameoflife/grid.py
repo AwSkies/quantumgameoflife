@@ -34,9 +34,9 @@ def color_unentangled(cell, color_mode_h, color_mode_s, color_mode_v):
         case ColorMode.B_PHASE:
             color_h = int(np.angle(cell["alive"], deg=True) % 360)
         case ColorMode.DELTA_PHASE_BA:
-            color_h = int(np.angle(cell["alive"] / cell["dead"], deg=True) % 360)
+            color_h = int((np.angle(cell["alive"], deg=True) - np.angle(cell["dead"], deg=True)) % 360)
         case ColorMode.DELTA_PHASE_AB:
-            color_h = int(np.angle(cell["dead"] / cell["alive"], deg=True) % 360)
+            color_h = int((np.angle(cell["dead"], deg=True) - np.angle(cell["alive"], deg=True)) % 360)
         case ColorMode.live_death:
             color_h = int(np.angle(cell["alive"], deg=True) % 360)
         case ColorMode.CONST:
@@ -55,12 +55,12 @@ def color_unentangled(cell, color_mode_h, color_mode_s, color_mode_v):
         case ColorMode.DELTA_PHASE_BA:
             color_s = int(
                 (100.0 / 360.0)
-                * (np.angle(cell["alive"] / cell["dead"], deg=True) % 360)
+                * ((np.angle(cell["alive"], deg=True) - np.angle(cell["dead"], deg=True)) % 360)
             )
         case ColorMode.DELTA_PHASE_AB:
             color_s = int(
                 (100.0 / 360.0)
-                * (np.angle(cell["dead"] / cell["alive"], deg=True) % 360)
+                * ((np.angle(cell["dead"], deg=True) - np.angle(cell["alive"], deg=True)) % 360)
             )
         case ColorMode.live_death:
             color_s = int(100 * np.abs(cell["alive"]))
@@ -80,12 +80,12 @@ def color_unentangled(cell, color_mode_h, color_mode_s, color_mode_v):
         case ColorMode.DELTA_PHASE_BA:
             color_v = int(
                 (100.0 / 360.0)
-                * (np.angle(cell["alive"] / cell["dead"], deg=True) % 360)
+                * ((np.angle(cell["alive"], deg=True) - np.angle(cell["dead"], deg=True)) % 360)
             )
         case ColorMode.DELTA_PHASE_AB:
             color_v = int(
                 (100.0 / 360.0)
-                * (np.angle(cell["dead"] / cell["alive"], deg=True) % 360)
+                * ((np.angle(cell["dead"], deg=True) - np.angle(cell["alive"], deg=True)) % 360)
             )
         case ColorMode.live_death:
             if(np.abs(cell["alive"]) ** 2 > LIFE_THRESHOLD):
@@ -124,6 +124,7 @@ def draw_grid(
     color_mode_s,
     color_mode_v,
 ):
+    drawn = np.zeros(np.shape(grid), dtype=pygame.Rect)
     for i, x in np.ndenumerate(grid):
         pos = (
             base
@@ -135,8 +136,9 @@ def draw_grid(
             x, entanglement_mode, color_mode_h, color_mode_s, color_mode_v
         )
 
-        pygame.draw.rect(
+        drawn[i] = pygame.draw.rect(
             screen,
             color,
             pygame.Rect(pos, (scale, scale)),
         )
+    return drawn

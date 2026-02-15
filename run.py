@@ -46,12 +46,18 @@ STEP_COUNTER_HEIGHT = 50
 STEP_COUNTER_WIDTH = 50
 STEP_COUNTER_RADIUS = 10
 
-HSV_DROPDOWNS_OFFSET_X = 25
-HSV_DROPDOWNS_OFFSET_Y = 15
-HSV_DROPDOWNS_HEIGHT = 50
-HSV_DROPDOWNS_WIDTH = 100
-HSV_DROPDOWNS_RADIUS = 10
-HSV_DROPDOWNS_X = RES_X - HSV_DROPDOWNS_WIDTH - HSV_DROPDOWNS_OFFSET_X
+MODE_OPTIONS_OFFSET_X = 25
+MODE_OPTIONS_OFFSET_Y = 15
+MODE_OPTIONS_HEIGHT = 50
+MODE_OPTIONS_WIDTH = 100
+MODE_OPTIONS_RADIUS = 10
+MODE_OPTIONS_X = RES_X - MODE_OPTIONS_WIDTH - MODE_OPTIONS_OFFSET_X
+
+EDITOR_OPTIONS_OFFSET_X = 25
+EDITOR_OPTIONS_OFFSET_Y = 25
+EDITOR_OPTIONS_HEIGHT = 30
+EDITOR_OPTIONS_WIDTH = 100
+EDITOR_OPTIONS_X = RES_X - EDITOR_OPTIONS_WIDTH - EDITOR_OPTIONS_OFFSET_X
 
 COLOR_OPTIONS = list(ColorMode)
 
@@ -65,9 +71,16 @@ CELL_SIZE = 10
 SPACING = 0.5  # spacing between cells in fraction of full cell size
 SIMULATION_STEP_FRAMES = 60
 
-phase_switch = True
 
-#LIFE_THRESHOLD = 0.5
+def update_editor_values(
+    grid, entanglement_mode, cell_selected, alive_slider, phase1_slider, phase2_slider
+):
+    if not entanglement_mode:
+        c = grid[cell_selected]
+        alive_slider.setValue(int(np.square(np.abs(c["alive"])) * 100))
+        phase1_slider.setValue(int(np.angle(c["dead"], deg=True)))
+        phase2_slider.setValue(int(np.angle(c["alive"], deg=True)))
+
 
 def main():
     pygame.init()
@@ -76,24 +89,21 @@ def main():
 
     running = True
     entanglement_mode = False
+    hamiltonian_phase_switch = False
     pan = pygame.Vector2()
     scale = 1.0
     step = 0
     step_frames = 0
+    grid_drawn = np.zeros((RES_X, RES_Y), dtype=pygame.Rect)
+    cell_selected = (0, 0)
 
     entangled_lattice = entanglement_cells.Lattice(N_CELLS_X, N_CELLS_Y)
-
-    # TODO: Initialize grid properly
-    # grid = hamiltonian.Lattice(N_CELLS_X, N_CELLS_Y)
-    #grid = non_entangled_propogation.add_ghost_edge(functional_cells.random_initialize(functional_cells.make_cell_array(N_CELLS_X, N_CELLS_Y)))
+    functional_lattice = functional_cells.Lattice(N_CELLS_X, N_CELLS_Y)
     hamiltonian_lattice = hamiltonian.Lattice(N_CELLS_X, N_CELLS_Y)
-    grid = hamiltonian_lattice.grid
-
 
     def observe():
-        nonlocal grid
-        # TODO: Perform actual observation calculation
-        grid = np.ones((N_CELLS_Y, N_CELLS_X))
+        # TODO: Perform actual observation calculation on the correct lattice object depending on the mode
+        ...
 
     speed_slider = Slider(
         screen,
@@ -121,7 +131,7 @@ def main():
         RES_Y - PLAY_TOGGLE_HEIGHT - PLAY_TOGGLE_OFFSET_Y,
         PLAY_TOGGLE_WIDTH,
         PLAY_TOGGLE_HEIGHT,
-        startOn=True,
+        startOn=False,
     )
     mode_toggle = Toggle(
         screen,
@@ -133,39 +143,85 @@ def main():
     )
     h_dropdown = Dropdown(
         screen,
-        HSV_DROPDOWNS_X,
-        MODE_TOGGLE_Y + MODE_TOGGLE_HEIGHT + HSV_DROPDOWNS_OFFSET_Y,
-        HSV_DROPDOWNS_WIDTH,
-        HSV_DROPDOWNS_HEIGHT,
+        MODE_OPTIONS_X,
+        MODE_TOGGLE_Y + MODE_TOGGLE_HEIGHT + MODE_OPTIONS_OFFSET_Y,
+        MODE_OPTIONS_WIDTH,
+        MODE_OPTIONS_HEIGHT,
         "Hue",
         COLOR_OPTIONS,
-        radius=HSV_DROPDOWNS_RADIUS,
+        radius=MODE_OPTIONS_RADIUS,
     )
     s_dropdown = Dropdown(
         screen,
-        HSV_DROPDOWNS_X,
+        MODE_OPTIONS_X,
         MODE_TOGGLE_Y
         + MODE_TOGGLE_HEIGHT
-        + 2 * HSV_DROPDOWNS_OFFSET_Y
-        + HSV_DROPDOWNS_HEIGHT,
-        HSV_DROPDOWNS_WIDTH,
-        HSV_DROPDOWNS_HEIGHT,
+        + 2 * MODE_OPTIONS_OFFSET_Y
+        + MODE_OPTIONS_HEIGHT,
+        MODE_OPTIONS_WIDTH,
+        MODE_OPTIONS_HEIGHT,
         "Saturation",
         COLOR_OPTIONS,
-        radius=HSV_DROPDOWNS_RADIUS,
+        radius=MODE_OPTIONS_RADIUS,
     )
     v_dropdown = Dropdown(
         screen,
-        HSV_DROPDOWNS_X,
+        MODE_OPTIONS_X,
         MODE_TOGGLE_Y
         + MODE_TOGGLE_HEIGHT
-        + 3 * HSV_DROPDOWNS_OFFSET_Y
-        + 2 * HSV_DROPDOWNS_HEIGHT,
-        HSV_DROPDOWNS_WIDTH,
-        HSV_DROPDOWNS_HEIGHT,
+        + 3 * MODE_OPTIONS_OFFSET_Y
+        + 2 * MODE_OPTIONS_HEIGHT,
+        MODE_OPTIONS_WIDTH,
+        MODE_OPTIONS_HEIGHT,
         "Value",
         COLOR_OPTIONS,
-        radius=HSV_DROPDOWNS_RADIUS,
+        radius=MODE_OPTIONS_RADIUS,
+    )
+    function_dropdown = Dropdown(
+        screen,
+        MODE_OPTIONS_X,
+        MODE_TOGGLE_Y
+        + MODE_TOGGLE_HEIGHT
+        + 4 * MODE_OPTIONS_OFFSET_Y
+        + 3 * MODE_OPTIONS_HEIGHT,
+        MODE_OPTIONS_WIDTH,
+        MODE_OPTIONS_HEIGHT,
+        "Function",
+        list(functional_cells.Functions),
+        radius=MODE_OPTIONS_RADIUS,
+    )
+    alive_slider = Slider(
+        screen,
+        EDITOR_OPTIONS_X,
+        RES_Y - 3 * EDITOR_OPTIONS_OFFSET_Y - 3 * EDITOR_OPTIONS_HEIGHT,
+        EDITOR_OPTIONS_WIDTH,
+        EDITOR_OPTIONS_HEIGHT,
+        min=0,
+        max=100,
+        step=1,
+        initial=100,
+    )
+    phase1_slider = Slider(
+        screen,
+        EDITOR_OPTIONS_X,
+        RES_Y - 2 * EDITOR_OPTIONS_OFFSET_Y - 2 * EDITOR_OPTIONS_HEIGHT,
+        EDITOR_OPTIONS_WIDTH,
+        EDITOR_OPTIONS_HEIGHT,
+        min=0,
+        max=359,
+        step=1,
+        initial=0,
+    )
+    phase2_slider = Slider(
+        screen,
+        EDITOR_OPTIONS_X,
+        RES_Y - EDITOR_OPTIONS_OFFSET_Y - EDITOR_OPTIONS_HEIGHT,
+        EDITOR_OPTIONS_WIDTH,
+        EDITOR_OPTIONS_HEIGHT,
+        min=0,
+        max=359,
+        step=1,
+        initial=0,
     )
     # TODO: Make text boxes on either side of the mode toggle to indicate freeform or entanglement mode
     step_counter = TextBox(
@@ -212,29 +268,69 @@ def main():
                 else:
                     pan += pygame.Vector2(event.x, -event.y) * PAN_SPEED
 
+            if event.type == pygame.MOUSEBUTTONUP:
+                if event.button == 1:
+                    # Get which cell has been clicked on (if any)
+                    pos = pygame.mouse.get_pos()
+                    clicked = False
+                    for i, r in np.ndenumerate(grid_drawn):
+                        if r.collidepoint(pos):
+                            cell_selected = i
+                            clicked = True
+                    if clicked:
+                        # Update sliders
+                        update_editor_values(
+                            functional_lattice.grid,
+                            entanglement_mode,
+                            cell_selected,
+                            alive_slider,
+                            phase1_slider,
+                            phase2_slider,
+                        )
+
         entanglement_mode = mode_toggle.getValue()
         
         if step_frames > SIMULATION_STEP_FRAMES * (1 - (speed_slider.getValue() / 100)):
             step += 1
             if entanglement_mode:
                 entangled_lattice.step()
-                ...
             else:
-                # TODO: Perform grid operations in functional mode
-                #grid = non_entangled_propogation.propogation_non_entangled(grid)
-                grid = hamiltonian_lattice.propogation(phase_switch)
-                ...
+                functional_lattice.step()
+                grid = hamiltonian_lattice.propogation(hamiltonian_phase_switch)
             step_frames = 0
+
+        functional_lattice.set_function(function_dropdown.getSelected())
 
         # fill the screen with a color to wipe away anything from last frame
         screen.fill("black")
 
+        # Set the selected cell's values
+        if not entanglement_mode:
+            if not play_toggle.getValue():
+                r_alive = np.sqrt(alive_slider.getValue() / 100.0)
+                phase1 = 2j * np.pi * phase1_slider.getValue() / 360
+                phase2 = 2j * np.pi * phase2_slider.getValue() / 360
+                functional_cells.set_cell_value(
+                    functional_lattice.grid[cell_selected],
+                    np.sqrt(1 - np.square(r_alive)) * np.exp(phase1),
+                    r_alive * np.exp(phase2),
+                )
+            else:
+                update_editor_values(
+                    functional_lattice.grid,
+                    entanglement_mode,
+                    cell_selected,
+                    alive_slider,
+                    phase1_slider,
+                    phase2_slider,
+                )
+
         if entanglement_mode:
             grid = entangled_lattice.alive_magnitudes
         else:
-            ...
+            grid = functional_lattice.grid
 
-        draw_grid(
+        grid_drawn = draw_grid(
             screen,
             entanglement_mode,
             grid,
@@ -246,11 +342,19 @@ def main():
             v_dropdown.getSelected(),
         )
 
-        for dropdown in [v_dropdown, s_dropdown, h_dropdown]:
+        for component in [
+            phase2_slider,
+            phase1_slider,
+            alive_slider,
+            function_dropdown,
+            v_dropdown,
+            s_dropdown,
+            h_dropdown,
+        ]:
             if entanglement_mode:
-                dropdown.hide()
+                component.hide()
             else:
-                dropdown.show()
+                component.show()
 
         step_counter.setText(str(step))
 
